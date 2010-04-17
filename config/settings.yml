@@ -1,0 +1,11 @@
+common: &common
+  window_title: Riggifier
+  
+development:
+  <<: *common
+  
+production:
+  <<: *common
+  
+test:
+  <<: *common

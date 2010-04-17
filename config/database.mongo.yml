@@ -1,0 +1,14 @@
+defaults: &defaults
+  host: localhost
+
+development:
+  <<: *defaults
+  database: riggifier
+  
+production:
+  <<: *defaults
+  database: riggifier
+  
+test:
+  <<: *defaults
+  database: riggifier_test

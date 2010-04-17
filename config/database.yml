@@ -1,0 +1,11 @@
+defaults: &defaults
+  host: localhost
+  adapter: sqlite3
+
+development:
+  <<: *defaults
+  database: db/riggifier.sqlite3
+  
+production:
+  <<: *defaults
+  database: db/riggifier.sqlite3
