@@ -14,7 +14,7 @@ module DatabaseSeeding
   
   def seed_database(options={})
     options.reverse_merge!(:env => Rails.env)
-    puts "Seeding the #{options[:env]} database..."
+    puts "Seeding the #{options[:env]} database..." unless options[:silent]
     establish_database(options[:env])
     seeds.each do |filename, ext, collection_name, model|
       if ext == "rb"

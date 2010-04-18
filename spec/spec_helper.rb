@@ -1,3 +1,14 @@
+######
+#
+# TODO: Add Spork
+#
+# Currently Spork is not compatible with Rails 3 or RSpec 2
+# ashleymoran is working on this, see:
+# - http://github.com/ashleymoran/spork
+# - http://github.com/ashleymoran/rspec-core
+#
+######
+
 #puts "spec/spec_helper.rb loaded, from:"
 #puts caller
 #puts
