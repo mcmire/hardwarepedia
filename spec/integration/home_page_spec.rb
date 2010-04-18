@@ -6,7 +6,9 @@ feature "The home page" do
     And stuff and things
   EOT
   
-  scenario "Visiting the home page" do
-    visit "/"
+  javascript do
+    scenario "Visiting the home page" do
+      visit "/"
+    end
   end
 end

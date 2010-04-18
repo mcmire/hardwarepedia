@@ -1,8 +1,7 @@
-Rspec.configure do |config|
-  config.before :suite do
-    Mongoid.master.collections.each(&:drop)
-  end
-  config.after :suite do
-    Mongoid.master.collections.each(&:drop)
-  end
+require 'database_truncation'
+require 'database_seeding'
+
+Rspec.configuration.before do
+  Riggifier.truncate_database
+  Riggifier.seed_database(:silent => true)
 end

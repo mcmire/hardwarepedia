@@ -1,6 +1,8 @@
+# CAPYBARA STUFF
+
 require 'capybara/rails'
 
-Capybara.app_host = "http://localhost:3100"
+Capybara.app_host = "http://localhost:6969"
 Capybara.javascript_driver = :culerity
 Capybara.run_server = false
 Capybara.default_selector = :css
@@ -66,47 +68,6 @@ module Capybara
     end
   end
 end
-
-#module Capybara
-#  module Searchable
-#    def all(*args)
-#      options = if args.last.is_a?(Hash) then args.pop else {} end
-#      if args[1].nil?
-#        kind, locator = Capybara.default_selector, args.first
-#      else
-#        kind, locator = args
-#      end
-#      if kind == :css
-#        options = {}
-#        options[:prefix] = "./" unless self.class == Capybara::Session
-#        locator = XPath.from_css(locator, options)
-#      end
-#
-#      puts "Locator: #{locator}"
-#
-#      results = all_unfiltered(locator)
-#
-#      if options[:text]
-#        results = results.select { |n| n.text.match(options[:text]) }
-#      end
-#
-#      if options[:visible] or Capybara.ignore_hidden_elements
-#        results = results.select { |n| n.visible? }
-#      end
-#
-#      results
-#    end
-#  end
-#  
-#  class XPath
-#    class << self
-#      def from_css(css, options={})
-#        Nokogiri::CSS.xpath_for(css, options).first
-#      end
-#      alias_method :for_css, :from_css
-#    end
-#  end
-#end
 
 #-------------------
 
@@ -212,8 +173,8 @@ module IntegrationExampleGroupBehavior
     # XXX: Might be easier just to do this manually, when saying 'feature'
     def story(story_content)
       story_content = story_content.strip.split(/[ \t]*\n+[ \t]*/).map {|line| "  #{line}\n" }.join    
-      metadata[:example_group][:description] << "\n"+story_content+"\n"
-      #metadata[:example_group][:full_description] << "\n"+story_content
+      #metadata[:example_group][:description] << "\n"+story_content+"\n"
+      metadata[:example_group][:full_description] << "\n"+story_content+"\n"
     end
   
     def javascript(&block)
@@ -235,35 +196,25 @@ module IntegrationExampleGroupBehavior
         includer.before(:all) do
           # TODO : Turn off transactions??
           Capybara.current_driver = Capybara.javascript_driver
-          @_old_env = RAILS_ENV
-          silence_warnings do
-            env = "integration"
-            env = Object.const_set(:RAILS_ENV, ENV["RAILS_ENV"] = env)
-            ActiveRecord::Base.establish_connection(env)
-          end
-          @_use_transactional_fixtures = self.class.use_transactional_fixtures
-          self.class.use_transactional_fixtures = false
+          @_old_env = Rails.env
+          Rails.env = "integration"
+          Riggifier.establish_database(Rails.env)
         end
         
         # Basically what we're doing here is telling RSpec to truncate/seed the database
         # BEFORE any before(:each) blocks in the superclass are executed
-        block = lambda do
-          puts "Truncating the #{RAILS_ENV} database..."
-          App.truncate_database(false)
-          puts "Seeding the #{RAILS_ENV} database..."
-          App.seed_database
-        end
-        includer.before_eachs.unshift(block)
+        # XXX: This now happens for all kinds of tests, not just integration
+        #block = lambda do
+        #  Riggifier.truncate_database
+        #  Riggifier.seed_database(:silent => true)
+        #end
+        #includer.before_eachs.unshift(block)
         
         includer.after(:all) do
           #page.driver.clear_browser
           Capybara.use_default_driver
-          env = @_old_env
-          silence_warnings do
-            env = Object.const_set(:RAILS_ENV, ENV["RAILS_ENV"] = env)
-            ActiveRecord::Base.establish_connection(env)
-          end
-          self.class.use_transactional_fixtures = @_use_transactional_fixtures
+          Rails.env = @_old_env
+          Riggifier.establish_database(Rails.env)
         end
       end
       

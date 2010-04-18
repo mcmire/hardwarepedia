@@ -12,3 +12,7 @@ production:
 test:
   <<: *defaults
   database: riggifier_test
+  
+integration:
+  <<: *defaults
+  database: riggifier_integration
