@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <%= csrf_meta_tag %>
+    
+    <title><%= window_title %></title>
+    <meta name="description" content="Project Xenon is a website that basically gives you infoporn on hardware, but also gives non-techies a hand when it comes to buying new hardware.">
+    <meta name="author" content="Elliot Winkler">
+    
+    <%= stylesheet_link_tag "vendor/message_div_helpers" %>
+    <%= stylesheet_link_tag "application" %>
+    
+    <style type="text/css">
+    <%= yield :css %>
+    </style>
+  </head>
+  
+  <%= tagged_body_start %>
+    <%= yield %>
+    
+    <%= yield :end_of_body %>
+    
+    <%= render "shared/google_analytics" if Rails.env.production? %>
+    
+    <script type="text/javascript">
+    var rails = {
+      env: "<%= Rails.env.to_s %>"
+    }
+    </script>
+    
+    <%= require_javascripts %>
+  </body>
+</html>
+    
