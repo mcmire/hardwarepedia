@@ -1,0 +1,22 @@
+Notes on benchmarking
+========================
+
+The main problem with keeping a database of benchmark data is there's no way to guarantee consistency between sites, between products of the same type, and even between benchmarks themselves. Every site has their own way of doing benchmarks and reports a different level of detail. First, 3DMark '06 has a lot of different tests, each with their own score. Most sites combine the graphics tests into one final score, while some sites record them separately. Second, some games which are used as benchmarks might not have repeatable benchmarks - they might require you to choose the start and end manually - so each test is going to be slightly different. Third, these sites tell you very little about what the settings were when the benchmark was run. You'll see "high quality" or "4xAA/16xAF" at least, but there might have been other settings like bloom that will skew the results. Fourth, even within a site the method of benchmark may change over time, which means a benchmark is only good after a certain time. Fifth, a benchmark is highly dependent on the system on which it was run. After even a year, a benchmark will simply become obsolete because the zero-point system will likely have changed in the meantime to keep up with increasing technologies. Sixth, benchmarks are only useful if you're comparing the exact same card made by the exact same manufacturer (you can't compare a Sapphire and an ATI, for instance).
+
+Is it enough to group benchmarks by which site they came from? Or is it just easier to link to the sites?
+
+3DMark
+------
+
+3DMark Vantage is the newest benchmark suite to test DX10 cards on Vista. Here are its tests:
+
+- 2 graphics tests: Jane Nash and New Calico
+- 2 CPU tests
+- 6 feature tests
+
+3DMark '06 is the most popular benchmark suite, designed to test DX9 cards. Here are its tests:
+
+- 2 Shader Model 2.0 graphics tests: Return to Proxycon and Firefly Forest
+- 2 Shader Model 3.0 graphics tests: Canyon Flight and Deep Freeze
+- 2 CPU tests: Red Valley (2 different modes)
+- 7 feature tests

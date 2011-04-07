@@ -1,0 +1,110 @@
+product: "Asus GeForce ENGTX285 TOP"
+url: "http://benchmarkreviews.com/index.php?option=com_content&task=view&id=289&Itemid=72"
+benchmarks:
+  - name: 3DMark06 v1.1.0 SM2
+    dx: 9
+    settings:
+      aa: 8
+      af: 16
+    units: fps
+    scenes:
+      - name: Return to Proxycon
+        scores:
+          - resolution: 1680x1050
+            score: 43.7
+          - resolution: 1920x1200
+            score: 42.8
+      - name: Firefly Forest
+        scores:
+          - resolution: 1680x1050
+            score: 42.8
+          - resolution: 1920x1200
+            score: 35.0
+  - name: 3DMark06 v1.1.0 HDR
+    dx: 9
+    settings:
+      aa: 8
+      af: 16
+    units: fps
+    scenes:
+      - name: Canyon Flight
+        scores:
+          - resolution: 1680x1050
+            score: 47.1
+          - resolution: 1920x1200
+            score: 42.9
+      - name: Deep Freeze
+        scores:
+          - resolution: 1680x1050
+            score: 38.1
+          - resolution: 1920x1200
+            score: 33.5
+  - name: "Call of Duty: Modern Warfare"
+    settings:
+      aa: 4
+      af: 16
+    units: fps
+    scores:
+      - resolution: 1680x1050
+        score: 112
+      - resolution: 1920x1200
+        score: 99
+  - name: Crysis
+    settings:
+      aa: 0
+    units: fps
+    scores:
+      - resolution: 1680x1050
+        score: 57.4
+      - resolution: 1920x1200
+        score: 47.7
+  - name: Crysis
+    settings:
+      aa: 4
+    units: fps
+    scores:
+      - resolution: 1680x1050
+        score: 46.5
+      - resolution: 1920x1200
+        score: 38.1
+  - name: Devil May Cry 4
+    settings:
+      aa: 8
+      af: 16
+      resolution: 1920x1200
+    units: fps
+    scores:
+      - scene: "Scene #2"
+        score: 94
+      - scene: "Scene #4"
+        score: 94
+  - name: Far Cry 2
+    dx: 9
+    settings:
+      aa: 8
+      quality: Ultra High
+    units: fps
+    scores:
+      - resolution: 1680x1050
+        score: 31.1
+      - resolution: 1920x1200
+        score: 27.5
+  - name: World in Conflict
+    dx: 10
+    settings:
+      aa: 4
+      af: 4
+      quality: Very High
+    units: fps
+    scores:
+      - resolution: 1680x1050
+        score: 65
+      - resolution: 1920x1200
+        score: 63
+  - name: Operating Temperatures
+    units: "°C"
+    scores:
+      - state: Idle
+        score: 36
+      - state: Max
+        score: 85

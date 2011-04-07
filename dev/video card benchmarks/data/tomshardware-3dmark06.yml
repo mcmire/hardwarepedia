@@ -1,0 +1,24 @@
+url: "http://www.tomshardware.com/charts/gaming-graphics-cards-charts-2009-high-quality/benchmarks,62.html"
+benchmarks:
+  - name: "3DMark06 v1.1.0 (Combined)"
+    settings:
+      resolution: "1280x1024"
+      quality: "Default"
+    scores:
+      - name: "ATI Radeon HD 4870 CrossFire"
+        score: 24604
+      - name: "Nvidia Geforce GTX 285 SLI"
+        score: 24533
+      - name: "eVGA GTX 295 Hydro Copper"
+        score: 24438
+  - name: "3DMark06 v1.1.0 HDR/SM3.0"
+    settings:
+      resolution: "1280x1024"
+      quality: "Default"
+    scores:
+      - name: "Nvidia Geforce GTX 285 SLI"
+        score: 12357
+      - name: "eVGA GTX 295 Hydro Copper"
+        score: 12354
+      - name: "ATI Radeon HD 4870 CrossFire"
+        score: 11997

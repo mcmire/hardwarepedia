@@ -1,0 +1,198 @@
+product: "Asus GeForce ENGTX285 TOP"
+url: "http://www.techspot.com/review/153-asus-geforce-gtx285"
+benchmarks:
+  - name: 3Dmark Vantage
+    dx: 9
+    settings:
+      quality: Default
+      aa: 0
+      af: 0
+    units: points
+    scores:
+      - resolution: 1680x1050
+        score: 9349
+      - resolution: 1920x1200
+        score: 7437
+      - resolution: 2560x1600
+        score: 4267
+  - name: Crysis
+    dx: 10
+    settings:
+      quality: High
+      aa: 0
+      af: 0
+    units: fps
+    scores:
+      - resolution: 1680x1050
+        score: 51
+      - resolution: 1920x1200
+        score: 44
+      - resolution: 2560x1600
+        score: 28
+  - name: Crysis Warhead
+    dx: 10
+    settings:
+      quality: Very High
+      aa: 0
+      af: 0
+    units: fps
+    scores:
+      - resolution: 1680x1050
+        score: 31
+      - resolution: 1920x1200
+        score: 26
+      - resolution: 2560x1600
+        score: 16
+  - name: "Company of Heroes: Opposing Fronts"
+    dx: 10
+    settings:
+      quality: Max
+      aa: 8
+      af: 16
+    units: fps
+    scores:
+      - resolution: 1680x1050
+        score: 98
+      - resolution: 1920x1200
+        score: 82
+      - resolution: 2560x1600
+        score: 53
+  - name: Supreme Commander
+    dx: 9
+    settings:
+      quality: Max      
+      aa: 8
+      af: 16
+    units: fps
+    scores:
+      - resolution: 1680x1050
+        score: 68
+      - resolution: 1920x1200
+        score: 62
+      - resolution: 2560x1600
+        score: 46
+  - name: "Enemy Territory: Quake Wars"
+    settings:
+      quality: Max
+      aa: 8
+      af: 16
+    units: fps
+    scores:
+      - resolution: 1680x1050
+        score: 95
+      - resolution: 1920x1200
+        score: 76
+      - resolution: 2560x1600
+        score: 51
+  - name: Dead Space
+    dx: 9
+    settings:
+      quality: Max
+      aa: 4
+      af: 0
+    units: fps
+    scores:
+      - resolution: 1680x1050
+        score: 223
+      - resolution: 1920x1200
+        score: 187
+      - resolution: 2560x1600
+        score: 125
+  - name: Fallout 3
+    dx: 9
+    settings: 
+      quality: Max
+      aa: 8
+      af: 16
+    units: fps
+    scores:
+      - resolution: 1680x1050
+        score: 90
+      - resolution: 1920x1200
+        score: 79
+      - resolution: 2560x1600
+        score: 50
+  - name: Left 4 Dead
+    dx: 9
+    settings:
+      quality: Max
+      aa: 8
+      af: 16
+    units: fps
+    scores:
+      - resolution: 1680x1050
+        score: 129
+      - resolution: 1920x1200
+        score: 109
+      - resolution: 2560x1600
+        score: 72
+  - name: World in Conflict
+    dx: 10
+    settings:
+      quality: Max
+      aa: 4
+      af: 16
+    units: fps
+    scores:
+      - resolution: 1680x1050
+        score: 55
+      - resolution: 1920x1200
+        score: 48
+      - resolution: 2560x1600
+        score: 33
+  - name: Unreal Tournament
+    dx: 9
+    settings:
+      quality: Max
+      aa: 8
+      af: 16
+    units: fps
+    scores:
+      - resolution: 1680x1050
+        score: 118
+      - resolution: 1920x1200
+        score: 95
+      - resolution: 2560x1600
+        score: 53
+  - name: Far Cry
+    dx: 10
+    settings:
+      quality: Max
+      aa: 0
+      af: 0
+    units: fps
+    scores:
+      - resolution: 1680x1050
+        score: 75
+      - resolution: 1920x1200
+        score: 68
+      - resolution: 2560x1600
+        score: 51
+  - name: "Call of Duty: World at War"
+    dx: 9
+    settings:
+      quality: Max
+      aa: 4
+      af: 0
+    units: fps
+    scores:
+      - resolution: 1680x1050
+        score: 75
+      - resolution: 1920x1200
+        score: 65
+      - resolution: 2560x1600
+        score: 48
+  - name: Power Consumption
+    units: watts
+    scores:
+      - state: Idle
+        score: 163
+      - state: Stress
+        score: 334
+  - name: Operating Temperatures
+    units: "°C"
+    scores:
+      - state: Idle
+        score: 42
+      - state: Stress
+        score: 74
