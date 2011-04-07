@@ -1,4 +1,4 @@
-module Riggifier
+module ProjectXenon
   class << self
     def database_settings
       @database_settings ||= YAML.load_file("#{Rails.root}/config/database.mongo.yml")
@@ -9,9 +9,9 @@ module Riggifier
   end
 end
 
-Riggifier.establish_database
+ProjectXenon.establish_database
 
-Riggifier::Application.configure do
+ProjectXenon::Application.configure do
   config.generators do |g|
     g.orm :mongoid
   end

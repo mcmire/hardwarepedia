@@ -1,6 +1,6 @@
 require 'yaml'
 
-module Riggifier
+module ProjectXenon
   class << self
     # adapted from http://sickpea.com/2009/6/rails-app-configuration-in-10-lines
     def settings(env = Rails.env)

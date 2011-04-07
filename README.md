@@ -1,5 +1,5 @@
-hardwarepedia
-=============
+Project Black Diamond
+=====================
 
 This is the source code for an app I'm working on, which I've code-named hardwarepedia.
 

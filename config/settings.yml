@@ -1,5 +1,5 @@
 common: &common
-  window_title: Riggifier
+  window_title: Project Xenon
   
 development:
   <<: *common

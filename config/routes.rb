@@ -1,4 +1,4 @@
-Riggifier::Application.routes.draw do |map|
+ProjectXenon::Application.routes.draw do |map|
   resources :categories do
     member do
       get :delete

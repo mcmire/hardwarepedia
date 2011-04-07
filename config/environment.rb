@@ -5,6 +5,6 @@ RequireProfiler.start
 require File.expand_path('../application', __FILE__)
 
 # Initialize the rails application
-Riggifier::Application.initialize!
+ProjectXenon::Application.initialize!
 
 RequireProfiler.stop
