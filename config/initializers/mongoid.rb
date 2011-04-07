@@ -7,6 +7,12 @@ module Riggifier
       Mongoid.config.database = Mongo::Connection.new.db(database_settings[env.to_s]["database"])
     end
   end
-  establish_database
 end
 
+Riggifier.establish_database
+
+Riggifier::Application.configure do
+  config.generators do |g|
+    g.orm :mongoid
+  end
+end

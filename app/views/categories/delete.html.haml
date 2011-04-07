@@ -1,0 +1,8 @@
+= form_tag @category, :method => :delete do
+
+  %p== Are you sure you want to delete the category <b>#{@category.name}</b>?
+  
+  %p
+    = submit_tag "Yes, I'm sure"
+    or
+    = link_to "No, never mind", categories_path

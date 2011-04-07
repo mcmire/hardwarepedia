@@ -2,9 +2,15 @@ require 'benchmark'
 require 'yaml'
 require 'set'
 begin
+  gem 'term-ansicolor'
   require 'term/ansicolor'
-rescue LoadError
-  raise "\n\nError loading require_profiler: You need to install the term-ansicolor gem (this will let you see colorized reports).\n\n"
+rescue LoadError => e
+  if e.message =~ /is not part of the bundle/
+    warn "\nError loading require_profiler: #{e.message}\n"
+  else
+    warn "\nError loading require_profiler: You need to install the term-ansicolor gem (this will let you see colorized reports).\n"
+  end
+  exit
 end
 
 class String
@@ -51,14 +57,14 @@ Term::ANSIColor.coloring = false
 # For Rails 2, you can place the following at the top of the Rails::Initializer
 # block in your config/environment.rb file:
 #
-#   require File.expand_path(File.dirname(__FILE__) + '/../lib/require_profiler')
+#   require File.expand_path('../../lib/require_profiler', __FILE__)
 #   RequireProfiler.start
 #   config.after_initialize { RequireProfiler.stop }
 #
 # For Rails 3, you can simply wrap everything in config/environment.rb in a `profile`
 # block, so the file looks something like:
 #
-#   require File.expand_path(File.dirname(__FILE__) + '/../lib/require_profiler')
+#   require File.expand_path('../../lib/require_profiler', __FILE__)
 #   RequireProfiler.profile do
 #     # Load the rails application
 #     require File.expand_path('../application', __FILE__)
@@ -344,7 +350,7 @@ module RequireProfiler
     end
     
     def app_dir
-      @app_dir ||= File.expand_path(File.dirname(__FILE__) + "/..")
+      @app_dir ||= File.expand_path("../..", __FILE__)
     end
     
     def tmp_dir

@@ -1,0 +1,24 @@
+%h1 Listing categories
+
+= message_divs
+
+- if @categories.any?
+
+  %table#categories
+    %tr
+      %th Name
+      %th
+      %th
+      %th
+    - @categories.each do |category|
+      %tr
+        %td= category.name
+        %td= link_to 'Show', category
+        %td= link_to 'Edit', edit_category_path(category)
+        %td= link_to 'Delete', delete_category_path(category), :title => 'Are you sure?', :class => "delete"
+
+  %p= link_to 'New category', new_category_path
+
+- else
+
+  %p== No categories, #{link_to('add one', new_category_path)}.

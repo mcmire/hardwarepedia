@@ -1,3 +1,4 @@
+=begin
 begin
   require 'rspec/core'
   require 'rspec/core/rake_task'
@@ -25,6 +26,9 @@ MSG
     end
   end
 end
+=end
+
+require 'rspec/core'
 
 Rake.application.instance_variable_get('@tasks').delete('default')
 
@@ -38,12 +42,13 @@ task :stats => "spec:statsetup"
 def create_spec_task(spec_level)
   task_name = (spec_level == :all ? :spec : "spec:#{spec_level}")
   dir = (spec_level == :all ? "spec/" : "spec/#{spec_level}")
-  Rspec::Core::RakeTask.new(task_name) do |t|
-    #t.spec_opts += ['--options', "spec/spec.opts"]
-    #t.spec_opts += ['--example', ENV["EXAMPLE"]] if ENV["EXAMPLE"]
-    #t.spec_opts += ['--line', ENV["LINE"]] if ENV["LINE"]
+  task task_name do
+    args = []
+    args << "-I" << "."
+    args << "-I" << "spec"
+    args << "-I" << "lib"
     if spec_level == :integration || spec_level == :all
-      #t.spec_opts += ['--format', 'nested']
+      #args << "-f nested"
       #
       # Since any environment variables executed along with 'rake spec' are not
       # propagated to the specs themselves, store the options in a file which
@@ -56,9 +61,17 @@ def create_spec_task(spec_level)
       options[:javascript] = (ENV["JS"] == "1")
       File.open("tmp/integration_spec.opts", "w") {|f| YAML.dump(options, f) }
     else
-      #t.spec_opts += ['--format', 'specdoc']
+      #args << "-f specdoc"
     end
-    t.pattern = "#{dir}/**/*_spec.rb"
+    args << (ENV["SPEC"] || dir)
+    #puts "Rspec::Core::Runner args: #{args.inspect}"
+    # Prevent specs from being autorun when this Rake task ends
+    Rspec::Core::Runner.send(:instance_variable_set, "@installed_at_exit", true)
+    # Notice that we don't spawn a new Ruby instance here!
+    # Instead, run the specs exactly how the rspec executable does it
+    # (well, actually, how the autorun mechanism does it).
+    # This ends up being like twice as fast as doing this in a separate process.
+    Rspec::Core::Runner.new.run(args) ? exit(0) : exit(1)
   end
 end
 

@@ -1,0 +1,17 @@
+!!! 5
+%html
+  %head
+    %meta(http-equiv="Content-Type" content="text/html; charset=utf-8")
+    = csrf_meta_tag
+    %title= format_title(@title)
+    - if Rails.env.production?
+      = javascript_include_tag "http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"
+    - else
+      = javascript_include_tag "vendor/jquery-1.4.2.js"
+    = javascript_include_tag "lib/ujs_destroy"
+    = javascript_include_tag "application", "rails"
+    = stylesheet_link_tag "vendor/message_div_helpers"
+    = stylesheet_link_tag "application"
+    = yield :head
+  %body
+    = yield

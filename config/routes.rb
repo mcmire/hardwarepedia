@@ -1,4 +1,10 @@
 Riggifier::Application.routes.draw do |map|
+  resources :categories do
+    member do
+      get :delete
+    end
+  end
+
   root :to => 'main#index'
   
   

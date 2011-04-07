@@ -1,12 +1,19 @@
+#puts "Loading Rails in #{ENV["RAILS_ENV"] || ENV["RACK_ENV"] || "development"} mode, please wait..."
+puts "Loading Rails, please wait..."
+
 require File.expand_path('../boot', __FILE__)
 
 require 'rails/all'
 
 # If you have a Gemfile, require the gems listed there, including any gems
 # you've limited to :test, :development, or :production.
+puts "Requiring gems for #{Rails.env} environment..."
 Bundler.require(:default, Rails.env) if defined?(Bundler)
 
 module Riggifier
+  extend DatabasePreparation
+  extend DatabasePreparation::Adapters::Mongoid
+  
   class Application < Rails::Application
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers

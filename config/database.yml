@@ -1,5 +1,6 @@
 defaults: &defaults
   host: localhost
+  # This needs to be here... any way to get rid of this?
   adapter: sqlite3
 
 development:

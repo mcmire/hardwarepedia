@@ -37,8 +37,18 @@ end
   # Ugh. Faggot
   I_KNOW_I_AM_USING_AN_OLD_AND_BUGGY_VERSION_OF_LIBXML2 = true
   
-  ENV["RAILS_ENV"] = "test"
-  require File.expand_path(File.dirname(__FILE__) + "/../config/environment")
+  if $".include?(File.expand_path("../../config/application.rb", __FILE__))
+    # In running rake spec, our Rakefile has already loaded config/application.
+    # That means that Rails.env is already set and all our gems have already been loaded. 
+    # So, we need to reset that and load the right gems.
+    Rails.env = "test"
+    puts "Requiring gems specific to #{Rails.env} environment..."
+    Bundler.require(:default, Rails.env)
+  else
+    ENV["RAILS_ENV"] = "test"
+  end
+  # At this point we haven't initialized our app yet, so let's go ahead and do that.
+  require File.expand_path("../../config/environment", __FILE__)
 
   # Go ahead and require ApplicationController since Spork delays loading it until each_run.
   # I think Rails think it's already been loaded at this point, but anyway, when rspec-rails
@@ -67,8 +77,6 @@ end
     # uncomment the following line.
     # config.use_transactional_examples false
   end
-  
-  
 
   #hprintf "Time for prefork: %.4f s\n", (Time.now.to_f - time.to_f)
 #end

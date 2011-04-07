@@ -85,19 +85,23 @@ end
 # This has been upgraded to Rails 3
 #
 module Rspec::Core::KernelExtensions
-  def feature(description, &block)
+  def feature(*args, &block)
     # the caller here is essential or else the --line option to `spec` doesn't work
     # XXX: I don't think this works since Rspec overrides caller...
-    describe("Feature: #{description}", :type => :integration, :caller => caller(0), &block)
+    args[0] = "Feature: #{args[0]}"
+    options = args.extract_options!.merge!(:type => :integration, :caller => caller(0))
+    describe(*(args << options), &block)
   end
 end
 
 module IntegrationExampleGroupBehavior
   def self.included(includer)
-    includer.extend(ClassMethods)
     includer.class_eval do
+      include InstanceMethods
+      extend ClassMethods
       include Capybara
       include Tableish
+      alias_method :press, :click
     end
     if defined?(Rails)
       includer.class_eval do
@@ -263,8 +267,8 @@ module IntegrationExampleGroupBehavior
       end
     end
   end
-  
-  Rspec.configure do |c|
-    c.include self, :type => :integration
-  end
+end
+
+Rspec.configure do |c|
+  c.include IntegrationExampleGroupBehavior, :type => :integration
 end

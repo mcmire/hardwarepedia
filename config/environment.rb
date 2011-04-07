@@ -1,8 +1,7 @@
-require File.expand_path(File.dirname(__FILE__) + '/../lib/require_profiler')
+require File.expand_path('../../lib/require_profiler', __FILE__)
 RequireProfiler.start
 
 # Load the rails application
-puts "Loading Rails, please wait..."
 require File.expand_path('../application', __FILE__)
 
 # Initialize the rails application

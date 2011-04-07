@@ -15,7 +15,7 @@ gem 'bundler', ">= 0.9.19"
 # Not sure why we need this?
 #gem 'sqlite3-ruby', :require => 'sqlite3'
 
-gem "mongoid", "2.0.0.beta2"
+gem "mongoid", :git => "git://github.com/durran/mongoid.git"
 gem "bson_ext", "0.20.1"
 
 #gem 'mongo_session_store', :git => 'git://github.com/nicolaracco/mongo_session_store.git'
@@ -26,6 +26,10 @@ gem "haml", "3.0.0.beta.3"
 
 #gem "jammit", :git => "git://github.com/railsjedi/jammit.git"
 
+gem "rails3-generators"
+
+gem "term-ansicolor", :require => "term/ansicolor"
+
 group :test do
   #gem "spork"
   gem "mcmire-mocha"
@@ -33,4 +37,5 @@ group :test do
   #gem "rspec-rails", ">= 2.0.0.beta.7"
   gem "rspec", ">= 2.0.0.beta.7"
   gem "capybara", ">= 0.3.7"
+  gem "launchy"
 end
