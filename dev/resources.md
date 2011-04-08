@@ -1,3 +1,6 @@
+Resources
+=========
+
 * http://tomshardware.com
 * http://maximumpc.com
 * http://www.anandtech.com/bench/default.aspx?b=2 (CPU only)
