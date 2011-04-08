@@ -1,0 +1,3 @@
+namespace :mine do
+  
+end

@@ -51,6 +51,19 @@ gem 'hierarchical_page_titles', '0.1.1'
 # Code: http://github.com/andi/simple-navigation
 gem 'simple-navigation', '3.1.0'
 
+# An HTTP library that's faster than Net::HTTP
+# We use this to mine data from different sites
+# Code: https://github.com/toland/patron
+# Project home: http://toland.github.com/patron/
+gem 'patron', '0.4.10'
+
+# An XML parser written in C
+# Site: http://nokogiri.org
+# Code: http://github.com/tenderlove/nokogiri
+gem 'nokogiri', '1.4.4'
+
+gem 'yajl-ruby'
+
 # Provides Rake tasks for preparing your test database, and better seeding
 # Code: http://github.com/mcmire/kaplan
 # (We include this in everywhere to expose Rake tasks without having to type RAILS_ENV=development)

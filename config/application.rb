@@ -10,6 +10,9 @@ require 'rails/all'
 puts "Requiring gems for #{Rails.env} environment..."
 Bundler.require(:default, Rails.env) if defined?(Bundler)
 
+# For debugging purposes
+require 'pp'
+
 module Hardwarepedia
   class Application < Rails::Application
     # Settings in config/environments/* take precedence over those specified here.
