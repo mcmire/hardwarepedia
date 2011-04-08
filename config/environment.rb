@@ -5,6 +5,6 @@ RequireProfiler.start
 require File.expand_path('../application', __FILE__)
 
 # Initialize the rails application
-ProjectXenon::Application.initialize!
+Hardwarepedia::Application.initialize!
 
 RequireProfiler.stop

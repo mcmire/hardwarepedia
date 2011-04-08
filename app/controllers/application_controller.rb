@@ -21,7 +21,7 @@ class ApplicationController < ActionController::Base
   # Read the (admittedly rather long) explanation in
   # lib/advertiser_web/controller_mixins/limited_exposure.rb for more.
   #
-  extend ProjectXenon::ControllerMixins::LimitedExposure
+  extend Hardwarepedia::ControllerMixins::LimitedExposure
   
   # Add helpful methods which let us ultimately emulate what inherited_resources
   # did before (except without all the magic). Each controller will get class
@@ -29,12 +29,12 @@ class ApplicationController < ActionController::Base
   # "resource" values), and each view will get methods like #resource_id,
   # #resource_class, #resource_name, etc.
   #
-  extend ProjectXenon::ControllerMixins::Resources
-  helper ProjectXenon::ViewMixins::Resources
+  extend Hardwarepedia::ControllerMixins::Resources
+  helper Hardwarepedia::ViewMixins::Resources
   
   # Add view helpers which are useful in tagging the <body> tag with info
   # like the current controller and action, etc.
-  helper ProjectXenon::ViewMixins::TaggedBody
+  helper Hardwarepedia::ViewMixins::TaggedBody
   
   # Set a global window title
   #

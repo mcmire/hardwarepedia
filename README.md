@@ -1,7 +1,7 @@
-Project Xenon
+Hardwarepedia
 =============
 
-This is the source code for an app I'm working on, which I've code-named "Project Xenon" for now.
+This is the source code for an app I'm working on, which I've code-named Hardwarepedia for now.
 
 Let's say you want to build a computer from scratch, or you already have a computer but you want to look for some computer parts. Maybe you're an amateur or experienced gamer, or you're just someone who may not be so technically inclined but you've decided that you don't want to order a computer from Dell, you want to try your hand at buying computer parts and doing the work yourself. The problem is that if you don't know what you're looking for, or you don't know much about what you're looking for, there aren't many good places to go to easily get good information. Sure, you can look up parts on Newegg and read reviews, or you can visit sites that list benchmarks, or you can peruse forums to get first-hand advice, but you have to spend a lot of time doing this. But you don't have a lot of time, you want to get enough information to make a purchase today or tomorrow, not a month from now.
 

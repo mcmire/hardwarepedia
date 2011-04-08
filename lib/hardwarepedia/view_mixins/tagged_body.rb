@@ -1,4 +1,4 @@
-module ProjectXenon
+module Hardwarepedia
   module ViewMixins
     module TaggedBody
       
@@ -52,4 +52,4 @@ module ProjectXenon
       
     end  # module TaggedBody
   end  # module ViewMixins
-end  # module ProjectXenon
+end  # module Hardwarepedia

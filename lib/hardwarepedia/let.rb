@@ -1,4 +1,4 @@
-module ProjectXenon
+module Hardwarepedia
   # This module provides a method, `let`, which further encapsulates making a
   # memoized method.
   #
@@ -123,4 +123,4 @@ module ProjectXenon
       
     end  # module ClassMethods
   end  # module Let
-end  # module ProjectXenon
+end  # module Hardwarepedia

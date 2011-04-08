@@ -1,4 +1,4 @@
-module ProjectXenon
+module Hardwarepedia
   module ControllerMixins
     # This is a module that lets you cleanly and clearly define values that you
     # can use anywhere in your controllers and views. It's similar to the
@@ -68,7 +68,7 @@ module ProjectXenon
       # Extending a module with LimitedExposure also includes the {Let} module.
       #
       def self.extended(base)
-        base.send(:include, ProjectXenon::Let)
+        base.send(:include, Hardwarepedia::Let)
       end
   
       # Creates a protected, memoized method in your controller using the given
@@ -98,4 +98,4 @@ module ProjectXenon
       
     end  # module LimitedExposure
   end  # module ControllerMixins
-end  # module ProjectXenon
+end  # module Hardwarepedia

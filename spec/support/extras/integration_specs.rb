@@ -202,15 +202,15 @@ module IntegrationExampleGroupBehavior
           Capybara.current_driver = Capybara.javascript_driver
           @_old_env = Rails.env
           Rails.env = "integration"
-          ProjectXenon.establish_database(Rails.env)
+          Hardwarepedia.establish_database(Rails.env)
         end
         
         # Basically what we're doing here is telling RSpec to truncate/seed the database
         # BEFORE any before(:each) blocks in the superclass are executed
         # XXX: This now happens for all kinds of tests, not just integration
         #block = lambda do
-        #  ProjectXenon.truncate_database
-        #  ProjectXenon.seed_database(:silent => true)
+        #  Hardwarepedia.truncate_database
+        #  Hardwarepedia.seed_database(:silent => true)
         #end
         #includer.before_eachs.unshift(block)
         
@@ -218,7 +218,7 @@ module IntegrationExampleGroupBehavior
           #page.driver.clear_browser
           Capybara.use_default_driver
           Rails.env = @_old_env
-          ProjectXenon.establish_database(Rails.env)
+          Hardwarepedia.establish_database(Rails.env)
         end
       end
       

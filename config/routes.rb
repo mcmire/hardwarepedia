@@ -1,4 +1,4 @@
-ProjectXenon::Application.routes.draw do |map|
+Hardwarepedia::Application.routes.draw do |map|
   resources :categories do
     member do
       get :delete

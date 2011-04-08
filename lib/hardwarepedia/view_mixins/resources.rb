@@ -1,4 +1,4 @@
-module ProjectXenon
+module Hardwarepedia
   module ViewMixins
     module Resources
       
@@ -71,4 +71,4 @@ module ProjectXenon
       
     end  # module Resources
   end  # module ViewMixins
-end  # module ProjectXenon
+end  # module Hardwarepedia

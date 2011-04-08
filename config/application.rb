@@ -10,7 +10,7 @@ require 'rails/all'
 puts "Requiring gems for #{Rails.env} environment..."
 Bundler.require(:default, Rails.env) if defined?(Bundler)
 
-module ProjectXenon
+module Hardwarepedia
   class Application < Rails::Application
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
