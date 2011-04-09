@@ -97,3 +97,7 @@ Schema
   - photos (Array)
   - ...
   - date of retrieval
+* Url
+  - url
+  - content
+  - date retrieved
