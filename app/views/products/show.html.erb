@@ -1,0 +1,36 @@
+<% category = product.category %>
+<% manufacturer = product.manufacturer %>
+<p>
+  <%= link_to category.name, category_path(category) %> »
+  <%= link_to manufacturer.name, manufacturer_path(manufacturer) %> »
+  <%= product.full_name %>
+</p>
+
+<h1><%= product.full_name %></h1>
+
+<p>URL: <%= link_to nil, product.content_urls.first, :target => "_blank" %></p>
+
+<h2>Prices</h2>
+
+<p>Newegg: <%= number_to_currency product.price %></p>
+
+<h2>Ratings</h2>
+
+<p>Newegg: <%= product.rating %> (<%= product.num_reviews %> reviews)</p>
+
+<h2>Images</h2>
+
+<p>
+  <% for image in product.images %>
+    <%= image_tag image.url, :alt => image.caption, :title => image.caption %>
+  <% end %>
+</p>
+
+<h2>Specs</h2>
+
+<dl>
+  <% product.specs.each do |name, value| %>
+    <dt><%= name %></dt>
+    <dd><%= value %></dd>
+  <% end %>
+</dl>

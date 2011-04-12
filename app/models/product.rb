@@ -1,28 +1,36 @@
 class Product
   include Mongoid::Document
   include Mongoid::Timestamps
+  include Hardwarepedia::ModelMixins::RequiresFields
   
-  belongs_to :product
   belongs_to :category
   belongs_to :chipset_manufacturer
   belongs_to :manufacturer
   
+  # For right now we are just assuming that we are hitting one URL...
+  # in the future if multiple URLs are involved maybe we could have a 'data'
+  # field that holds info scraped from a URL
+  
   field :name
   field :full_name
   field :summary
+  field :price, type: Float
   field :specs, type: Hash
-  field :official_urls, type: Array
-  field :purchase_urls, type: Array
-  field :mention_urls, type: Array
+  field :rating
+  field :num_reviews, type: Integer
+  field :content_urls, type: Set
+  field :official_urls, type: Set
+  field :mention_urls, type: Set
   field :market_released_at, type: Date
   field :aggregated_score, type: Float
   field :chipset, type: Boolean
   
-  embeds_many :specs
-  embeds_many :prices
-  embeds_many :ratings
+  #embeds_many :prices
+  #embeds_many :ratings
   embeds_many :reviews
-  embeds_many :photos
+  embeds_many :images
+  
+  requires_fields :name, :price, :specs, :num_reviews, :content_urls
   
   before_save :set_full_name
   
@@ -52,5 +60,16 @@ class Product
   
   def set_full_name
     self.full_name = "#{manufacturer.name} #{name}"
+  end
+  
+  def as_json(options={})
+    json = super
+    json.merge!(
+      :category_name => category.name,
+      :chipset_manufacturer_name => chipset_manufacturer.try(:name),
+      :manufacturer_name => manufacturer.name,
+      :images => images.map(&:as_json)
+    )
+    json
   end
 end

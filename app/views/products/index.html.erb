@@ -1,0 +1,27 @@
+<h1>Products</h1>
+
+<ul>
+  <% for manufacturer in manufacturers %>
+    <li><%= link_to manufacturer.name, :anchor => manufacturer.webkey %></li>
+  <% end %>
+</ul>
+
+<% for manufacturer in manufacturers %>
+  <h2 id="<%= manufacturer.webkey %>"><%= manufacturer.name %></h2>
+  <table>
+    <thead>
+      <tr>
+        <th><%= link_to "Name", sort_key: "full_name", sort_order: inv_sort_order_of("full_name"), anchor: manufacturer.webkey %></th>
+        <th><%= link_to "Price", sort_key: "price", sort_order: inv_sort_order_of("price"), anchor: manufacturer.webkey %></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% for product in products_by_manufacturer[manufacturer] %>
+        <tr>
+          <td><%= link_to product.full_name, product_path(product) %></td>
+          <td style="text-align: right"><%= number_to_currency product.price, precision: 2 %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>

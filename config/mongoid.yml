@@ -8,11 +8,11 @@ defaults: &defaults
 
 development:
   <<: *defaults
-  database: project_xenon_development
+  database: hardwarepedia_development
 
 test:
   <<: *defaults
-  database: project_xenon_test
+  database: hardwarepedia_test
 
 # set these environment variables on your prod server
 production:

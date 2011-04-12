@@ -5,6 +5,9 @@ Hardwarepedia::Application.routes.draw do |map|
     end
   end
 
+  resources :products
+  resources :manufacturers
+
   root :to => 'main#index'
   
   

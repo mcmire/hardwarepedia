@@ -1,9 +1,10 @@
-class Category
+class Url
   include Mongoid::Document
   include Mongoid::Timestamps
   include Hardwarepedia::ModelMixins::RequiresFields
-
-  field :name
   
-  requires_fields :name
+  field :url
+  field :content
+  
+  requires_fields :url, :content
 end

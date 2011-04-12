@@ -16,7 +16,7 @@ Schema
   - product name - the model of the video card or whatever
   - full name (just for easier access) - this will be manufacturer name + chipset name + model name
   - official url - this is on the manufacturer's page
-  - buy urls - urls to buy the product
+  - content urls - urls we can hit to update the database
   - mention urls - urls that have reviews, benchmarks, from online sites or e-zines...
   - quick summary of specs?
     - pros, cons, bottom line, that sort of thing
@@ -31,7 +31,7 @@ Schema
   - embeds_many ratings - this is not a log of ratings, simply the current ratings from different sites
   - has_many benchmarks
   - embeds_many prices - this is not a log of prices, it's simply the current prices from different sites
-  - embeds_many photos - primary photo is just the first photo in the list
+  - embeds_many images - primary image is just the first image in the list
   - timestamps
 * Benchmark
   - belongs_to product
@@ -94,7 +94,7 @@ Schema
   - rating
   - specs (Hash)
   - reviews (Array)
-  - photos (Array)
+  - images (Array)
   - ...
   - date of retrieval
 * Url

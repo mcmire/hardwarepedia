@@ -38,5 +38,5 @@ class ApplicationController < ActionController::Base
   
   # Set a global window title
   #
-  add_window_title "PROJECT XENON BITCHEZZZZ"
+  add_window_title "Hardwarepedia"
 end

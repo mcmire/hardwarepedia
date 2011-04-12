@@ -62,7 +62,7 @@ gem 'patron', '0.4.10'
 # Code: http://github.com/tenderlove/nokogiri
 gem 'nokogiri', '1.4.4'
 
-gem 'yajl-ruby'
+gem 'yajl-ruby', :require => 'yajl'
 
 # Provides Rake tasks for preparing your test database, and better seeding
 # Code: http://github.com/mcmire/kaplan
