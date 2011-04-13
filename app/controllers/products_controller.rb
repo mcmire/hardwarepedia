@@ -29,7 +29,7 @@ class ProductsController < ApplicationController
     products.inject({}) {|h,p| m = manufacturers_by_id[p.manufacturer_id]; (h[m] ||= []) << p; h }
   end
   expose(:product) do
-    Product.find(params[:id])
+    Product.where(:webkey => params[:id]).first
   end
   expose(:sort_key) { session[:sort_key] = params[:sort_key] || session[:sort_key] || "full_name" }
   expose(:sort_order) { session[:sort_order] = params[:sort_order] || session[:sort_order] || "asc" }

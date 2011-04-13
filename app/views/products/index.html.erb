@@ -12,14 +12,23 @@
     <thead>
       <tr>
         <th><%= m_sorted_link_to manu, "Name", "full_name" %></th>
+        <th><%= m_sorted_link_to manu, "Chipset", "chipset_full_name" %></th>
         <th><%= m_sorted_link_to manu, "Price", "price" %></th>
         <th><%= m_sorted_link_to manu, "Rating", "rating_index" %></th>
       </tr>
     </thead>
     <tbody>
-      <% for product in products_by_manufacturer[manu] %>
+      <% for product in (products_by_manufacturer[manu] || []) %>
+        <% chipset = product.chipset %>
         <tr>
           <td><%= link_to product.full_name, product_path(product) %></td>
+          <td>
+            <% if product.is_chipset? %>
+              Yes
+            <% elsif chipset %>
+              <%= link_to chipset.try(:full_name), product_path(chipset) %>
+            <% end %>
+          </td>
           <td style="text-align: right"><%= number_to_currency product.price, precision: 2 %></td>
           <td>
             <% if product.rating %>

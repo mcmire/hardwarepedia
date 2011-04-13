@@ -64,6 +64,24 @@ module Hardwarepedia
       product.content_urls << product_url
       product.specs = specs
 
+      chipset_manufacturer_name = specs.delete("Chipset Manufacturer")
+      chipset_model_name = specs.delete("GPU").sub(%r{\s*\(.+?\)$}, "")
+      if chipset_manufacturer = @manufacturers_by_name[chipset_manufacturer_name]
+        puts "(Reading chipset manufacturer '#{chipset_manufacturer_name}' from cache)"
+      else
+        puts "Creating chipset manufacturer '#{chipset_manufacturer_name}'"
+        chipset_manufacturer = @manufacturers_by_name[chipset_manufacturer_name] = Manufacturer.create!(name: chipset_manufacturer_name)
+      end
+      chipset_full_name = "#{chipset_manufacturer_name} #{chipset_model_name}"
+      if chipset = Product.where(manufacturer_id: chipset_manufacturer.id, name: chipset_model_name).first
+        puts "(Found chipset product '#{chipset_full_name}')"
+      else
+        puts "Creating chipset product '#{chipset_full_name}'"
+        chipset = Product.create!(category: category, manufacturer: chipset_manufacturer, name: chipset_model_name, is_chipset: true)
+        # Eventually we will want to copy some of the attributes from this implementation product...
+      end
+      product.chipset = chipset
+
       # Are you serious
       sku = doc.at_xpath('//div[@id="bcaBreadcrumbTop"]//dd[last()]').text.sub(/^Item[ ]*#:[ ]*/, "")[1..-1]
       javascript = fetch("http://content.newegg.com/LandingPage/ItemInfo4ProductDetail.aspx?Item=#{sku}")
@@ -83,13 +101,6 @@ module Hardwarepedia
       end
 
       product.images = []
-      #img = doc.at_xpath('//img[@id="mainSlide_0"]')
-      #thumb_url = img["src"]
-      ## We have the url of the thumbnail but we need a url of the entire image
-      #url = thumb_url.sub(/\?.+$/, "") + "?scl=2.4"
-      #unless product.images.where(url: url).exists?
-      #  product.images << Image.new(url: url, caption: img["title"])
-      #end
       thumb_links = doc.xpath('//ul[contains(@class, "navThumbs")]//a')
       for thumb_link in thumb_links
         # this will give me back xml - i can read the fset element and get dx and dy to get the image dimensions

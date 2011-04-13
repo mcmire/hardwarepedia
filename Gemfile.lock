@@ -28,7 +28,6 @@ GEM
       builder (~> 2.1.2)
       i18n (~> 0.5.0)
     activesupport (3.0.6)
-    bcrypt-ruby (2.1.4)
     bson (1.3.0)
     bson_ext (1.3.0)
     builder (2.1.2)
@@ -49,9 +48,6 @@ GEM
     configuration (1.2.0)
     culerity (0.2.15)
     database_cleaner (0.6.6)
-    devise (1.1.3)
-      bcrypt-ruby (~> 2.1.2)
-      warden (~> 0.10.7)
     diff-lcs (1.1.2)
     erubis (2.6.6)
       abstract (>= 1.0.0)
@@ -71,7 +67,6 @@ GEM
       inherited_resources (>= 1.0)
     json_pure (1.5.1)
     kaplan (0.2.4)
-    kramdown (0.12.0)
     launchy (0.3.7)
       configuration (>= 0.0.5)
       rake (>= 0.8.1)
@@ -134,15 +129,10 @@ GEM
     treetop (1.4.9)
       polyglot (>= 0.3.1)
     tzinfo (0.3.26)
-    warden (0.10.7)
-      rack (>= 1.0.0)
     will_paginate (3.0.pre2)
     xpath (0.1.3)
       nokogiri (~> 1.3)
     yajl-ruby (0.8.2)
-    yard (0.6.7)
-    yard-rspec (0.1)
-      yard
 
 PLATFORMS
   ruby
@@ -156,7 +146,6 @@ DEPENDENCIES
   capybara (~> 0.4.1.rc)
   compass (= 0.10.6)
   database_cleaner (~> 0.6.0)
-  devise (= 1.1.3)
   factory_girl (~> 2.0.0.beta1)
   factory_girl_rails!
   faker (~> 0.9.5)
@@ -164,7 +153,6 @@ DEPENDENCIES
   hierarchical_page_titles (= 0.1.1)
   inherited_resources_views (= 0.4.1)
   kaplan (= 0.2.4)
-  kramdown (~> 0.12.0)
   launchy (~> 0.3.7)
   mongoid (= 2.0.1)
   nokogiri (= 1.4.4)
@@ -180,5 +168,3 @@ DEPENDENCIES
   term-ansicolor
   timecop (~> 0.3.5)
   yajl-ruby
-  yard (~> 0.6.3)
-  yard-rspec (~> 0.1.0)

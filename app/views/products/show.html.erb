@@ -1,38 +1,66 @@
+<p><%= link_to "« Back to products", products_path %></p>
+
 <% category = product.category %>
 <% manufacturer = product.manufacturer %>
+<% chipset = product.chipset %>
+
 <p>
-  <%= link_to category.name, category_path(category) %> »
+  <%= link_to category.name, category_path(category.id) %> »
   <%= link_to manufacturer.name, manufacturer_path(manufacturer) %> »
   <%= product.full_name %>
 </p>
 
 <h1><%= product.full_name %></h1>
 
-<p>URL: <%= link_to nil, product.content_urls.first, :target => "_blank" %></p>
+<% if product.is_chipset? %>
+  <p><i>(This is a chipset)</i></p>
 
-<h2>Prices</h2>
+  <p>Implementations:</p>
 
-<p><b>Newegg:</b> <%= number_to_currency product.price %></p>
+  <ul>
+    <% for implementation in product.implementations.order_by([:full_name, :asc]) %>
+      <li><%= link_to implementation.full_name, product_path(implementation) %></li>
+    <% end %>
+  </ul>
+<% elsif chipset %>
+  <p><b>Chipset:</b> <%= link_to chipset.full_name, product_path(chipset) %></p>
+<% end %>
 
-<h2>Ratings</h2>
+<% if product.content_urls.any? %>
+  <p>URL: <%= link_to nil, product.content_urls.first, :target => "_blank" %></p>
+<% end %>
 
-<p><b>Newegg:</b> <%= product.rating.raw_value %> (<%= product.num_reviews %> reviews)</p>
+<% if product.price %>
+  <h2>Prices</h2>
 
-<h2>Images</h2>
+  <p><b>Newegg:</b> <%= number_to_currency product.price %></p>
+<% end %>
 
-<p>
-  <% for image in product.images %>
-    <img src="<%= image.url %>" alt="<%= image.caption %>" width="20%">
-  <% end %>
-</p>
+<% if product.rating %>
+  <h2>Ratings</h2>
 
-<h2>Specs</h2>
+  <p><b>Newegg:</b> <%= product.rating.raw_value %> (<%= product.num_reviews %> reviews)</p>
+<% end %>
 
-<table id="specs">
-  <% product.specs.each do |name, value| %>
-    <tr>
-      <th><%= name %></th>
-      <td><%= value %></td>
-    </tr>
-  <% end %>
-</dl>
+<% if product.images.any? %>
+  <h2>Images</h2>
+
+  <p>
+    <% for image in product.images %>
+      <img src="<%= image.url %>" alt="<%= image.caption %>" width="20%">
+    <% end %>
+  </p>
+<% end %>
+
+<% if product.specs.any? %>
+  <h2>Specs</h2>
+
+  <table id="specs">
+    <% product.specs.each do |name, value| %>
+      <tr>
+        <th><%= name %></th>
+        <td><%= value %></td>
+      </tr>
+    <% end %>
+  </dl>
+<% end %>

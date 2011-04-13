@@ -3,9 +3,11 @@ class Product
   include Mongoid::Timestamps
   include Hardwarepedia::ModelMixins::RequiresFields
   
+  belongs_to :chipset, class_name: "Product"
   belongs_to :category
-  belongs_to :chipset_manufacturer
   belongs_to :manufacturer
+  
+  has_many :implementations, class_name: "Product", inverse_of: :chipset
   
   # For right now we are just assuming that we are hitting one URL...
   # in the future if multiple URLs are involved maybe we could have a 'data'
@@ -15,14 +17,15 @@ class Product
   field :full_name
   field :summary
   field :price, type: Float
-  field :specs, type: Hash
+  field :specs, type: Hash, :default => {}
   field :num_reviews, type: Integer
-  field :content_urls, type: Set
-  field :official_urls, type: Set
-  field :mention_urls, type: Set
+  field :content_urls, type: Set, :default => Set.new
+  field :official_urls, type: Set, :default => Set.new
+  field :mention_urls, type: Set, :default => Set.new
   field :market_released_at, type: Date
   field :aggregated_score, type: Float
-  field :chipset, type: Boolean
+  field :is_chipset, type: Boolean, default: false
+  field :webkey
   
   #embeds_many :prices
   #embeds_many :ratings
@@ -31,9 +34,12 @@ class Product
   
   embeds_one :rating
   
-  before_save :set_full_name
+  before_save :set_full_name, :set_webkey
   
-  requires_fields :name, :price, :specs, :num_reviews, :content_urls
+  requires_fields :name, :full_name, :webkey
+  requires_fields :price, :specs, :num_reviews, :content_urls, :unless => :is_chipset?
+  
+  alias :to_param :webkey
   
   def calculate_avg_price
     self.avg_price = prices.avg
@@ -61,6 +67,11 @@ class Product
   
   def set_full_name
     self.full_name = "#{manufacturer.name} #{name}"
+  end
+  
+  def set_webkey
+    #self.webkey = full_name.gsub(" ", "-").gsub(/[^A-Za-z0-9_-]+/, "").downcase
+    self.webkey = full_name.parameterize
   end
   
   def as_json(options={})

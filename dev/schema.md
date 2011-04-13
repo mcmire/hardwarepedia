@@ -9,9 +9,8 @@ Schema
   - official url
   - timestamps
 * Product
-  - product id - if this is a chipset then it will be naturally linked to implementation products
+  - chipset id - if this is a chipset then it will be naturally linked to implementation products
   - category id (belongs_to :category)
-  - chipset manufacturer id (belongs_to :chipset_manufacturer) - used for video cards and motherboards; for instance, a manufacturer could be Sapphire while the chipset manufacturer is Nvidia
   - manufacturer id (belongs_to :manufacturer)
   - product name - the model of the video card or whatever
   - full name (just for easier access) - this will be manufacturer name + chipset name + model name

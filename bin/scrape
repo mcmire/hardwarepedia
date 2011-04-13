@@ -1,0 +1,2 @@
+#!/bin/bash
+nwd rake scrape:products --trace 2>&1 | tee log/scraper.log

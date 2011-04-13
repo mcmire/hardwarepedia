@@ -41,7 +41,7 @@ gem 'simple_form', '1.2.2'
 
 # Rack-based authentication solution based on Warden
 # Code: http://github.com/plataformatec/devise
-gem 'devise', '1.1.3'
+#gem 'devise', '1.1.3'
 
 # Provides controller and view methods to make displaying of window/page titles DRYer
 # Code: http://github.com/mcmire/hierarchical_page_titles
@@ -72,19 +72,19 @@ gem 'kaplan', '0.2.4'
 
 group :development do
   # (We include this in development to expose Rake tasks without having to type RAILS_ENV=test)
-  gem 'rspec-rails', '~> 2.2.0'
+  #gem 'rspec-rails', '~> 2.2.0'
 
   # Reads your source files, generates documentation so you can look at it in a web browser
   # Project home: http://yardoc.org/
   # Code: http://github.com/lsegal/yard
-  gem 'yard', '~> 0.6.3'
+  #gem 'yard', '~> 0.6.3'
 
   # Documentation is parsed as Markdown.
-  gem 'kramdown', '~> 0.12.0'
+  #gem 'kramdown', '~> 0.12.0'
 
   # Adds RSpec examples to YARD documentation
   # Code: https://github.com/lsegal/yard-spec-plugin
-  gem 'yard-rspec', '~> 0.1.0'
+  #gem 'yard-rspec', '~> 0.1.0'
   
   # I think we are only using this for require-profiler...
   gem "term-ansicolor", :require => "term/ansicolor"
