@@ -16,7 +16,6 @@ class Product
   field :summary
   field :price, type: Float
   field :specs, type: Hash
-  field :rating
   field :num_reviews, type: Integer
   field :content_urls, type: Set
   field :official_urls, type: Set
@@ -30,9 +29,11 @@ class Product
   embeds_many :reviews
   embeds_many :images
   
-  requires_fields :name, :price, :specs, :num_reviews, :content_urls
+  embeds_one :rating
   
   before_save :set_full_name
+  
+  requires_fields :name, :price, :specs, :num_reviews, :content_urls
   
   def calculate_avg_price
     self.avg_price = prices.avg

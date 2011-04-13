@@ -21,7 +21,7 @@ module Hardwarepedia
       def check_required_fields
         missing_fields = self.class.required_fields.select {|field| __send__(field).blank? }
         if missing_fields.any?
-          raise "The following fields are required: #{missing_fields.to_sentence}"
+          raise "The following fields are required: #{missing_fields.to_sentence}.\nRecord: #{inspect}"
         end
       end
       

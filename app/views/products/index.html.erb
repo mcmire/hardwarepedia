@@ -6,20 +6,29 @@
   <% end %>
 </ul>
 
-<% for manufacturer in manufacturers %>
-  <h2 id="<%= manufacturer.webkey %>"><%= manufacturer.name %></h2>
+<% for manu in manufacturers %>
+  <h2 id="<%= manu.webkey %>"><%= manu.name %></h2>
   <table>
     <thead>
       <tr>
-        <th><%= link_to "Name", sort_key: "full_name", sort_order: inv_sort_order_of("full_name"), anchor: manufacturer.webkey %></th>
-        <th><%= link_to "Price", sort_key: "price", sort_order: inv_sort_order_of("price"), anchor: manufacturer.webkey %></th>
+        <th><%= m_sorted_link_to manu, "Name", "full_name" %></th>
+        <th><%= m_sorted_link_to manu, "Price", "price" %></th>
+        <th><%= m_sorted_link_to manu, "Rating", "rating_index" %></th>
       </tr>
     </thead>
     <tbody>
-      <% for product in products_by_manufacturer[manufacturer] %>
+      <% for product in products_by_manufacturer[manu] %>
         <tr>
           <td><%= link_to product.full_name, product_path(product) %></td>
           <td style="text-align: right"><%= number_to_currency product.price, precision: 2 %></td>
+          <td>
+            <% if product.rating %>
+              <%= product.rating.raw_value %>
+              (<%= pluralize product.num_reviews, 'review' %>)
+            <% else %>
+              -
+            <% end %>
+          </td>
         </tr>
       <% end %>
     </tbody>

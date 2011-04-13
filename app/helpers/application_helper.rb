@@ -32,4 +32,18 @@ module ApplicationHelper
     EOT
     javascript_tag(javascript)
   end
+  
+  def sorted_link_to(link_text, sort_key, params={})
+    params[:sort_key] = sort_key
+    params[:sort_order] = inv_sort_order_of(sort_key)
+    link_to(link_text, params)
+  end
+  
+  def inv_sort_order_of(sort_key)
+    if self.sort_key == sort_key
+      (self.sort_order == "asc") ? "desc" : "asc"
+    else
+      return "asc"
+    end
+  end
 end

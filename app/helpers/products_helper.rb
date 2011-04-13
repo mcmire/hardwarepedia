@@ -1,9 +1,5 @@
 module ProductsHelper
-  def inv_sort_order_of(sort_key)
-    if self.sort_key == sort_key
-      (self.sort_order == "asc") ? "desc" : "asc"
-    else
-      return "asc"
-    end
+  def m_sorted_link_to(manufacturer, text, sort_key)
+    sorted_link_to(text, sort_key, anchor: manufacturer.webkey)
   end
 end

@@ -73,8 +73,9 @@ module Hardwarepedia
 
       rating_node = doc.at_xpath('//div[contains(@class, "grpRating")]//a[contains(@class, "itmRating")]/span')
       # Some products will naturally not have any reviews yet, so there is no rating.
-      if rating_node
-        product.rating = rating_node.text
+      if rating_node && rating_raw_value = rating_node.text.presence
+        product.rating = Rating.new(:raw_value => rating_raw_value)
+        product.rating.interpret_raw_value  # to ensure we have a value
         num_reviews_node = rating_node.next
         product.num_reviews = num_reviews_node.text.scan(/\d+/).first
       else
