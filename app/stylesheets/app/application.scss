@@ -1,6 +1,18 @@
+@import "compass/css3/inline-block";
+
 table {
+  th {
+    font-weight: bold;
+  }
   th, td {
     text-align: left;
     padding: 3px 7px;
+  }
+}
+
+#specs {
+  th {
+    vertical-align: top;
+    width: 200px;
   }
 }

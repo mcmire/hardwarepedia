@@ -12,25 +12,27 @@
 
 <h2>Prices</h2>
 
-<p>Newegg: <%= number_to_currency product.price %></p>
+<p><b>Newegg:</b> <%= number_to_currency product.price %></p>
 
 <h2>Ratings</h2>
 
-<p>Newegg: <%= product.rating %> (<%= product.num_reviews %> reviews)</p>
+<p><b>Newegg:</b> <%= product.rating.raw_value %> (<%= product.num_reviews %> reviews)</p>
 
 <h2>Images</h2>
 
 <p>
   <% for image in product.images %>
-    <%= image_tag image.url, :alt => image.caption, :title => image.caption %>
+    <img src="<%= image.url %>" alt="<%= image.caption %>" width="20%">
   <% end %>
 </p>
 
 <h2>Specs</h2>
 
-<dl>
+<table id="specs">
   <% product.specs.each do |name, value| %>
-    <dt><%= name %></dt>
-    <dd><%= value %></dd>
+    <tr>
+      <th><%= name %></th>
+      <td><%= value %></td>
+    </tr>
   <% end %>
 </dl>
