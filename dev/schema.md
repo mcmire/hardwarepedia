@@ -88,13 +88,11 @@ Schema
 * ProductLog
   - url
   - product id - the log will be indexed by product id for fast retrieval
-  - manufacturer id
   - price
   - rating
-  - specs (Hash)
+  - num_reviews
   - reviews (Array)
-  - images (Array)
-  - ...
+  - benchmarks (Array)
   - date of retrieval
 * Url
   - url

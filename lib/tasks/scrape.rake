@@ -14,7 +14,8 @@ namespace :scrape do
   
   task :product => :init do
     product_url = ENV["URL"] or raise "Must pass URL=..."
-    category_name = ENV["CATEGORY"] or raies "Must pass CATEGORY=..."
+    category_name = ENV["CATEGORY"] or raise "Must pass CATEGORY=..."
+    
     category = Category.where(name: category_name).first
     Hardwarepedia::Scraper.new.scrape_product(product_url, category)
   end

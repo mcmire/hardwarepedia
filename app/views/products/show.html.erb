@@ -27,19 +27,33 @@
 <% end %>
 
 <% if product.content_urls.any? %>
-  <p>URL: <%= link_to nil, product.content_urls.first, :target => "_blank" %></p>
+  <p><b>URL:</b> <%= link_to nil, product.content_urls.first, :target => "_blank" %></p>
 <% end %>
 
-<% if product.price %>
+<% if product.prices.any? %>
   <h2>Prices</h2>
 
-  <p><b>Newegg:</b> <%= number_to_currency product.price %></p>
+  <% product.prices_grouped_by_retailer.each do |retailer_name, prices| %>
+    <h3><%= retailer_name %></h3>
+    <ul>
+      <% for price in prices %>
+        <li><b><%= price.created_at.to_s(:std) %>:</b> <%= number_to_currency price.amount %></li>
+      <% end %>
+    </ul>
+  <% end %>
 <% end %>
 
-<% if product.rating %>
+<% if product.ratings.any? %>
   <h2>Ratings</h2>
 
-  <p><b>Newegg:</b> <%= product.rating.raw_value %> (<%= product.num_reviews %> reviews)</p>
+  <% product.ratings_grouped_by_retailer.each do |retailer_name, ratings| %>
+    <h3><%= retailer_name %></h3>
+    <ul>
+      <% for rating in ratings %>
+        <li><b><%= rating.created_at.to_s(:std) %>:</b> <%= rating.raw_value %> (<%= pluralize rating.num_reviews, 'review' %>)</li>
+      <% end %>
+    </ul>
+  <% end %>
 <% end %>
 
 <% if product.images.any? %>

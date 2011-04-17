@@ -16,7 +16,6 @@ class Product
   field :name
   field :full_name
   field :summary
-  field :price, type: Float
   field :specs, type: Hash, :default => {}
   field :num_reviews, type: Integer
   field :content_urls, type: Set, :default => Set.new
@@ -27,19 +26,37 @@ class Product
   field :is_chipset, type: Boolean, default: false
   field :webkey
   
-  #embeds_many :prices
-  #embeds_many :ratings
-  embeds_many :reviews
   embeds_many :images
   
-  embeds_one :rating
+  embeds_many :prices, :cascade_callbacks => true
+  embeds_many :ratings, :cascade_callbacks => true
+  
+  embeds_many :reviews, :cascade_callbacks => true
   
   before_save :set_full_name, :set_webkey
   
   requires_fields :name, :full_name, :webkey
-  requires_fields :price, :specs, :num_reviews, :content_urls, :unless => :is_chipset?
+  requires_fields :specs, :content_urls, :unless => :is_chipset?
   
   alias :to_param :webkey
+  
+  def prices_grouped_by_retailer
+    self.prices.to_a.group_by(&:retailer_name).each do |retailer_name, prices|
+      prices.sort! {|a,b| b.created_at <=> a.created_at }
+    end
+  end
+  def ratings_grouped_by_retailer
+    self.ratings.to_a.group_by(&:retailer_name).each do |retailer_name, ratings|
+      ratings.sort! {|a,b| b.created_at <=> a.created_at }
+    end
+  end
+  
+  def current_rating
+    self.ratings.order_by([:created_at, :desc]).first
+  end
+  def current_price
+    self.prices.order_by([:created_at, :desc]).first
+  end
   
   def calculate_avg_price
     self.avg_price = prices.avg

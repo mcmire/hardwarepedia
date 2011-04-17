@@ -82,24 +82,6 @@ module Hardwarepedia
       end
       product.chipset = chipset
 
-      # Are you serious
-      sku = doc.at_xpath('//div[@id="bcaBreadcrumbTop"]//dd[last()]').text.sub(/^Item[ ]*#:[ ]*/, "")[1..-1]
-      javascript = fetch("http://content.newegg.com/LandingPage/ItemInfo4ProductDetail.aspx?Item=#{sku}")
-      json = javascript.sub(/^\s*var Product={};\s*var rawItemInfo=/m, "").sub(/;\s*Product=rawItemInfo;\s*$/m, "")
-      hash = Yajl::Parser.parse(json)
-      product.price = hash["finalPrice"]
-
-      rating_node = doc.at_xpath('//div[contains(@class, "grpRating")]//a[contains(@class, "itmRating")]/span')
-      # Some products will naturally not have any reviews yet, so there is no rating.
-      if rating_node && rating_raw_value = rating_node.text.presence
-        product.rating = Rating.new(:raw_value => rating_raw_value)
-        product.rating.interpret_raw_value  # to ensure we have a value
-        num_reviews_node = rating_node.next
-        product.num_reviews = num_reviews_node.text.scan(/\d+/).first
-      else
-        product.num_reviews = 0
-      end
-
       product.images = []
       thumb_links = doc.xpath('//ul[contains(@class, "navThumbs")]//a')
       for thumb_link in thumb_links
@@ -124,6 +106,8 @@ module Hardwarepedia
           end
         end
       end
+      
+      _scrape_product_details(product, product_url, doc)
 
       puts "Saving product record for '#{product.full_name}'"
       product.save!
@@ -162,6 +146,22 @@ module Hardwarepedia
 
     def visit(url)
       Nokogiri.parse(fetch(url))
+    end
+    
+    def _scrape_product_details(product, product_url, doc)
+      # Are you serious
+      sku = doc.at_xpath('//div[@id="bcaBreadcrumbTop"]//dd[last()]').text.sub(/^Item[ ]*#:[ ]*/, "")[1..-1]
+      javascript = fetch("http://content.newegg.com/LandingPage/ItemInfo4ProductDetail.aspx?Item=#{sku}")
+      json = javascript.sub(/^\s*var Product={};\s*var rawItemInfo=/m, "").sub(/;\s*Product=rawItemInfo;\s*$/m, "")
+      hash = Yajl::Parser.parse(json)
+      product.prices << Price.new(url: product_url, amount: hash["finalPrice"])
+
+      rating_node = doc.at_xpath('//div[contains(@class, "grpRating")]//a[contains(@class, "itmRating")]/span')
+      # Some products will naturally not have any reviews yet, so there is no rating.
+      if rating_node && rating_raw_value = rating_node.text.presence
+        num_reviews = rating_node.next.text.scan(/\d+/).first
+        product.ratings << Rating.new(url: product_url, raw_value: rating_raw_value, num_reviews: num_reviews)
+      end
     end
   end
 end

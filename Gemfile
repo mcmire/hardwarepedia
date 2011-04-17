@@ -1,6 +1,6 @@
 source :rubygems
 
-gem "bundler", '1.0.11'
+gem "bundler", '1.0.12'
 
 # Require these explicitly since we want to exclude ActiveRecord
 %w(actionmailer actionpack activesupport railties).each do |name|
@@ -62,13 +62,20 @@ gem 'patron', '0.4.10'
 # Code: http://github.com/tenderlove/nokogiri
 gem 'nokogiri', '1.4.4'
 
-gem 'yajl-ruby', :require => 'yajl'
+# Super-fast JSON encoding/encoding
+# Code: http://github.com/brianmario/yajl-ruby
+gem 'yajl-ruby', '0.8.2', :require => 'yajl'
 
 # Provides Rake tasks for preparing your test database, and better seeding
 # Code: http://github.com/mcmire/kaplan
 # (We include this in everywhere to expose Rake tasks without having to type RAILS_ENV=development)
 gem 'kaplan', '0.2.4'
 #gem 'kaplan', :path => "~/code/github/mine/kaplan"
+
+# Use a hash like an ActiveRecord object (complete with finders, etc.).
+# Perfect for `roles` and other data structures which store static data.
+# Code: https://github.com/zilkey/active_hash
+gem 'active_hash', '0.9.1'
 
 group :development do
   # (We include this in development to expose Rake tasks without having to type RAILS_ENV=test)

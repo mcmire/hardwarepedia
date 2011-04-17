@@ -13,8 +13,8 @@
       <tr>
         <th><%= m_sorted_link_to manu, "Name", "full_name" %></th>
         <th><%= m_sorted_link_to manu, "Chipset", "chipset_full_name" %></th>
-        <th><%= m_sorted_link_to manu, "Price", "price" %></th>
-        <th><%= m_sorted_link_to manu, "Rating", "rating_index" %></th>
+        <th><%= m_sorted_link_to manu, "Current Price", "price" %></th>
+        <th><%= m_sorted_link_to manu, "Current Rating", "rating_index" %></th>
       </tr>
     </thead>
     <tbody>
@@ -29,13 +29,15 @@
               <%= link_to chipset.try(:full_name), product_path(chipset) %>
             <% end %>
           </td>
-          <td style="text-align: right"><%= number_to_currency product.price, precision: 2 %></td>
+          <td style="text-align: right">
+            <% if product.current_price %>
+              <%= number_to_currency product.current_price.amount, precision: 2 %>
+            <% end %>
+          </td>
           <td>
-            <% if product.rating %>
-              <%= product.rating.raw_value %>
-              (<%= pluralize product.num_reviews, 'review' %>)
-            <% else %>
-              -
+            <% if product.current_rating %>
+              <%= product.current_rating.raw_value %>
+              (<%= pluralize product.current_rating.num_reviews, 'review' %>)
             <% end %>
           </td>
         </tr>
