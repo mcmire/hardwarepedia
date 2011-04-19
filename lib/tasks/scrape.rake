@@ -5,18 +5,20 @@ namespace :scrape do
   end
   
   task :products => :init do
-    puts "Clearing out manufacturers and products..."
-    Manufacturer.delete_all
-    Product.delete_all
+    #puts "Clearing out manufacturers and products..."
+    #Manufacturer.delete_all
+    #Product.delete_all
+    #Url.delete_all
     
     Hardwarepedia::Scraper.new.scrape_products
   end
   
   task :product => :init do
     product_url = ENV["URL"] or raise "Must pass URL=..."
-    category_name = ENV["CATEGORY"] or raise "Must pass CATEGORY=..."
+    retailer_name = "Newegg"
+    category_name = "Graphics Cards"
     
     category = Category.where(name: category_name).first
-    Hardwarepedia::Scraper.new.scrape_product(product_url, category)
+    Hardwarepedia::Scraper.new.scrape_product(retailer_name, category_name, product_url)
   end
 end
