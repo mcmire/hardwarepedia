@@ -37,14 +37,14 @@ class ProductsController < ApplicationController
   def index
     respond_to do |format|
       format.html
-      format.json { render json: products.map(&:as_json) }
+      format.json { render :json => products.map(&:as_json) }
     end
   end
   
   def show
     respond_to do |format|
       format.html
-      format.json { render json: product }
+      format.json { render :json => product }
     end
   end
 end

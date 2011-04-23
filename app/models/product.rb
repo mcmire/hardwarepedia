@@ -3,11 +3,11 @@ class Product
   include Mongoid::Timestamps
   include Hardwarepedia::ModelMixins::RequiresFields
   
-  belongs_to :chipset, class_name: "Product"
+  belongs_to :chipset, :class_name => "Product"
   belongs_to :category
   belongs_to :manufacturer
   
-  has_many :implementations, class_name: "Product", inverse_of: :chipset
+  has_many :implementations, :class_name => "Product", :inverse_of => :chipset
   
   # For right now we are just assuming that we are hitting one URL...
   # in the future if multiple URLs are involved maybe we could have a 'data'
@@ -16,14 +16,14 @@ class Product
   field :name
   field :full_name
   field :summary
-  field :specs, type: Hash, :default => {}
-  field :num_reviews, type: Integer
-  field :content_urls, type: Set, :default => Set.new
-  field :official_urls, type: Set, :default => Set.new
-  field :mention_urls, type: Set, :default => Set.new
-  field :market_released_at, type: Date
-  field :aggregated_score, type: Float
-  field :is_chipset, type: Boolean, default: false
+  field :specs, :type => Hash, :default => {}
+  field :num_reviews, :type => Integer
+  field :content_urls, :type => Set, :default => Set.new
+  field :official_urls, :type => Set, :default => Set.new
+  field :mention_urls, :type => Set, :default => Set.new
+  field :market_released_at, :type => Date
+  field :aggregated_score, :type => Float
+  field :is_chipset, :type => Boolean, :default => false
   field :webkey
   
   embeds_many :images
@@ -41,14 +41,18 @@ class Product
   alias :to_param :webkey
   
   def prices_grouped_by_retailer
-    self.prices.to_a.group_by(&:retailer_name).each do |retailer_name, prices|
+    grouped_prices = self.prices.to_a.group_by(&:retailer_name)
+    grouped_prices.each do |retailer_name, prices|
       prices.sort! {|a,b| b.created_at <=> a.created_at }
     end
+    grouped_prices
   end
   def ratings_grouped_by_retailer
-    self.ratings.to_a.group_by(&:retailer_name).each do |retailer_name, ratings|
+    grouped_ratings = self.ratings.to_a.group_by(&:retailer_name)
+    grouped_ratings.each do |retailer_name, ratings|
       ratings.sort! {|a,b| b.created_at <=> a.created_at }
     end
+    grouped_ratings
   end
   
   def current_rating

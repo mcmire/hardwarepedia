@@ -14,10 +14,6 @@ end
 # Code: http://github.com/mongoid/mongoid
 gem "mongoid", '2.0.1'
 
-# Makes Mongo go faster fasterrr!
-# Code: ???
-gem "bson_ext", '1.3.0'
-
 #gem 'mongo_session_store', :git => 'git://github.com/nicolaracco/mongo_session_store.git'
 
 # Haml (Pythonic HTML) and Sass (Awesome improvements to CSS)
@@ -51,20 +47,14 @@ gem 'hierarchical_page_titles', '0.1.1'
 # Code: http://github.com/andi/simple-navigation
 gem 'simple-navigation', '3.1.0'
 
-# An HTTP library that's faster than Net::HTTP
-# We use this to mine data from different sites
-# Code: https://github.com/toland/patron
-# Project home: http://toland.github.com/patron/
-gem 'patron', '0.4.10'
-
 # An XML parser written in C
 # Site: http://nokogiri.org
 # Code: http://github.com/tenderlove/nokogiri
 gem 'nokogiri', '1.4.4'
 
-# Super-fast JSON encoding/encoding
-# Code: http://github.com/brianmario/yajl-ruby
-gem 'yajl-ruby', '0.8.2', :require => 'yajl'
+# JSON encoding/encoding
+# Code: http://github.com/flori/json
+gem 'json', '1.5.1'
 
 # Provides Rake tasks for preparing your test database, and better seeding
 # Code: http://github.com/mcmire/kaplan
@@ -76,6 +66,14 @@ gem 'kaplan', '0.2.4'
 # Perfect for `roles` and other data structures which store static data.
 # Code: https://github.com/zilkey/active_hash
 gem 'active_hash', '0.9.1'
+
+# Adds color to Strings
+# Code: http://github.com/defunkt/colored
+# -- For some reason it doesn't work if we require it right away
+gem 'colored', '1.2', :require => false
+
+# Provides String#to_ascii which is useful when screenscraping
+gem 'stringex', '1.2.1'
 
 group :development do
   # (We include this in development to expose Rake tasks without having to type RAILS_ENV=test)

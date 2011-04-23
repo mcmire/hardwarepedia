@@ -31,7 +31,7 @@
           </td>
           <td style="text-align: right">
             <% if product.current_price %>
-              <%= number_to_currency product.current_price.amount, precision: 2 %>
+              <%= number_to_currency product.current_price.amount, :precision => 2 %>
             <% end %>
           </td>
           <td>

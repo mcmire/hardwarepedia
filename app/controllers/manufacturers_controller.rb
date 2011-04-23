@@ -3,7 +3,7 @@ class ManufacturersController < ApplicationController
   
   def index
     respond_to do |format|
-      format.json { render json: manufacturers }
+      format.json { render :json => manufacturers }
     end
   end
 end

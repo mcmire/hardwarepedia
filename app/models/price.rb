@@ -5,8 +5,8 @@ class Price
   
   embedded_in :product
   
-  field :url, type: String
-  field :amount, type: Float
+  field :url, :type => String
+  field :amount, :type => Float
   
   requires_fields :url, :amount
   

@@ -6,4 +6,5 @@ tmp/*
 tmp/**/*
 *.tmproj
 vendor/ruby
+vendor/jruby
 public/stylesheets

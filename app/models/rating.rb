@@ -5,10 +5,10 @@ class Rating
   
   embedded_in :product
   
-  field :url, type: String
-  field :raw_value, type: String
-  field :value, type: Float
-  field :num_reviews, type: Integer
+  field :url, :type => String
+  field :raw_value, :type => String
+  field :value, :type => Float
+  field :num_reviews, :type => Integer
   
   before_save :interpret_raw_value
   
