@@ -71,6 +71,8 @@ GEM
     ffi (1.0.7-java)
     ffi-ncurses (0.3.3)
       ffi (>= 0.6.3)
+    glassfish (1.0.3-java)
+      rack (>= 0.4.0)
     haml (3.0.25)
     has_scope (0.5.0)
     hierarchical_page_titles (0.1.1)
@@ -181,6 +183,7 @@ DEPENDENCIES
   factory_girl_rails!
   faker (~> 0.9.5)
   ffi-ncurses (~> 0.3.3)
+  glassfish
   haml (= 3.0.25)
   hierarchical_page_titles (= 0.1.1)
   inherited_resources_views (= 0.4.1)

@@ -12,6 +12,11 @@ end
 # Needed as a part of a standard JRuby install
 platforms :jruby do
   gem 'jruby-openssl', '0.7.3'
+  
+  group :production do
+    # Bundler complains without this, since we are saying `bundle exec jruby -S glassfish` on the server
+    gem 'glassfish'
+  end
 end
 
 #---
@@ -58,6 +63,7 @@ gem 'simple-navigation', '3.1.0'
 # Site: http://nokogiri.org
 # Code: http://github.com/tenderlove/nokogiri
 platforms :jruby do
+  # Make sure you have libxml-dev and libxslt-dev installed before you install this
   gem 'nokogiri', '1.4.4.2'
 end
 
