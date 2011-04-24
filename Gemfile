@@ -1,18 +1,23 @@
 source :rubygems
 
-gem "bundler", '1.0.12'
+# This isn't strictly necessary, but we want to make sure the server has the
+# right version of Bundler
+gem 'bundler', '1.0.12'
 
 # Require these explicitly since we want to exclude ActiveRecord
 %w(actionmailer actionpack activesupport railties).each do |name|
   gem name, '3.0.6'
 end
 
+# Needed as a part of a standard JRuby install
+gem 'jruby-openssl', '0.7.3'
+
 #---
 
 # Awesome MongoDB ORM
 # Site: http://mongoid.org/
 # Code: http://github.com/mongoid/mongoid
-gem "mongoid", '2.0.1'
+gem 'mongoid', '2.0.1'
 
 #gem 'mongo_session_store', :git => 'git://github.com/nicolaracco/mongo_session_store.git'
 
@@ -20,7 +25,7 @@ gem "mongoid", '2.0.1'
 # (We don't use Haml)
 # Site: http://sass-lang.com/
 # Code: http://github.com/nex3/haml
-gem "haml", '3.0.25'
+gem 'haml', '3.0.25'
 
 # Provides Sass helpers for easily using CSS3 features cross-browser
 # Code: http://github.com/chriseppstein/compass
@@ -92,7 +97,13 @@ group :development do
   #gem 'yard-rspec', '~> 0.1.0'
   
   # I think we are only using this for require-profiler...
-  gem "term-ansicolor", :require => "term/ansicolor"
+  #gem "term-ansicolor", :require => "term/ansicolor"
+  
+  gem 'capistrano', '~> 2.5.21'
+  # Needed for the multistage stuff
+  gem 'capistrano-ext', '~> 1.2.1'
+  # Speeds up the highline gem (which Capistrano uses) in JRuby
+  gem 'ffi-ncurses', '~> 0.3.3'
 end
 
 group :test, :integration do
