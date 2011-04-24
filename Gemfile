@@ -10,7 +10,9 @@ gem 'bundler', '1.0.12'
 end
 
 # Needed as a part of a standard JRuby install
-gem 'jruby-openssl', '0.7.3'
+platforms :jruby do
+  gem 'jruby-openssl', '0.7.3'
+end
 
 #---
 
@@ -55,7 +57,9 @@ gem 'simple-navigation', '3.1.0'
 # An XML parser written in C
 # Site: http://nokogiri.org
 # Code: http://github.com/tenderlove/nokogiri
-gem 'nokogiri', '1.4.4'
+platforms :jruby do
+  gem 'nokogiri', '1.4.4.2'
+end
 
 # JSON encoding/encoding
 # Code: http://github.com/flori/json
@@ -102,8 +106,10 @@ group :development do
   gem 'capistrano', '~> 2.5.21'
   # Needed for the multistage stuff
   gem 'capistrano-ext', '~> 1.2.1'
-  # Speeds up the highline gem (which Capistrano uses) in JRuby
-  gem 'ffi-ncurses', '~> 0.3.3'
+  platforms :jruby do
+    # Speeds up the highline gem (which Capistrano uses) in JRuby
+    gem 'ffi-ncurses', '~> 0.3.3'
+  end
 end
 
 group :test, :integration do
