@@ -6,17 +6,12 @@ gem 'bundler', '1.0.12'
 
 # Require these explicitly since we want to exclude ActiveRecord
 %w(actionmailer actionpack activesupport railties).each do |name|
-  gem name, '3.0.6'
+  gem name, '3.0.7'
 end
 
 # Needed as a part of a standard JRuby install
 platforms :jruby do
   gem 'jruby-openssl', '0.7.3'
-  
-  group :production do
-    # Bundler complains without this, since we are saying `bundle exec jruby -S glassfish` on the server
-    gem 'glassfish'
-  end
 end
 
 #---
@@ -62,10 +57,10 @@ gem 'simple-navigation', '3.1.0'
 # An XML parser written in C
 # Site: http://nokogiri.org
 # Code: http://github.com/tenderlove/nokogiri
-platforms :jruby do
+#platforms :jruby do
   # Make sure you have libxml-dev and libxslt-dev installed before you install this
-  gem 'nokogiri', '1.4.4.2'
-end
+  gem 'nokogiri', '~> 1.4.4'
+#end
 
 # JSON encoding/encoding
 # Code: http://github.com/flori/json
@@ -115,6 +110,11 @@ group :development do
   platforms :jruby do
     # Speeds up the highline gem (which Capistrano uses) in JRuby
     gem 'ffi-ncurses', '~> 0.3.3'
+  end
+  
+  platforms :jruby do
+    #gem 'kirk'
+    gem 'trinidad'
   end
 end
 

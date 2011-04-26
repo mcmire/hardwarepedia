@@ -33,5 +33,3 @@ set :repository, "http://github.com/mcmire/hardwarepedia"
 set :git_shallow_clone, 1
 # When Cap checks out the code, also initialize and update the submodules
 set :git_enable_submodules, 1
-
-load File.expand_path("../deploy/glassfish.rb", __FILE__)

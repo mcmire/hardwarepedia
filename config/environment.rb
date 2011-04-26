@@ -1,5 +1,5 @@
-require File.expand_path('../../lib/require_profiler', __FILE__)
-RequireProfiler.start
+#require File.expand_path('../../lib/require_profiler', __FILE__)
+#RequireProfiler.start
 
 # Load the rails application
 require File.expand_path('../application', __FILE__)
@@ -7,4 +7,4 @@ require File.expand_path('../application', __FILE__)
 # Initialize the rails application
 Hardwarepedia::Application.initialize!
 
-RequireProfiler.stop
+#RequireProfiler.stop
