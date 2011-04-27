@@ -1,14 +1,13 @@
 class Rating
-  include Mongoid::Document
-  include Mongoid::Timestamps
+  include MongoMapper::EmbeddedDocument
+  include MongoMapper::Plugins::Timestamps
   include Hardwarepedia::ModelMixins::RequiresFields
   
-  embedded_in :product
-  
-  field :url, :type => String
-  field :raw_value, :type => String
-  field :value, :type => Float
-  field :num_reviews, :type => Integer
+  key :url, String
+  key :raw_value, String
+  key :value, Float
+  key :num_reviews, Integer
+  timestamps!
   
   before_save :interpret_raw_value
   

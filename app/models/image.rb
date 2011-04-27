@@ -1,12 +1,11 @@
 class Image
-  include Mongoid::Document
-  include Mongoid::Timestamps
+  include MongoMapper::EmbeddedDocument
+  include MongoMapper::Plugins::Timestamps
   include Hardwarepedia::ModelMixins::RequiresFields
   
-  embedded_in :product
-  
-  field :url
-  field :caption
+  key :url, String
+  key :caption, String
+  timestamps!
   
   requires_fields :url
 end

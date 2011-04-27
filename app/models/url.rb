@@ -5,17 +5,15 @@ class Url
     Digest::MD5.hexdigest(content)
   end
   
-  include Mongoid::Document
-  include Mongoid::Timestamps
+  include MongoMapper::Document
   include Hardwarepedia::ModelMixins::RequiresFields
   
   attr_accessor :doc
   
-  #field :retailer_name
-  #field :category_name
-  field :url
-  field :body
-  field :content_md5
+  key :url, String
+  key :body, String
+  key :content_md5, String
+  timestamps!
   
   requires_fields :url, :body, :content_md5
 end

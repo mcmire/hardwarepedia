@@ -1,11 +1,14 @@
 class Manufacturer
-  include Mongoid::Document
-  include Mongoid::Timestamps
+  include MongoMapper::Document
+  include MongoMapper::Plugins::IdentityMap
   include Hardwarepedia::ModelMixins::RequiresFields
   
-  field :name
-  field :official_url
-  field :webkey
+  key :name, String
+  key :official_url, String
+  key :webkey, String
+  timestamps!
+  
+  many :products
   
   before_save :set_webkey
   

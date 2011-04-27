@@ -17,9 +17,9 @@ end
 #---
 
 # Awesome MongoDB ORM
-# Site: http://mongoid.org/
-# Code: http://github.com/mongoid/mongoid
-gem 'mongoid', '2.0.1'
+# Site: http://mongomapper.com
+# Code: http://github.com/jnunemaker/mongomapper
+gem 'mongo_mapper', '0.9.0'
 
 #gem 'mongo_session_store', :git => 'git://github.com/nicolaracco/mongo_session_store.git'
 

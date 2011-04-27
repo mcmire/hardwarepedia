@@ -5,7 +5,7 @@ class ProductsController < ApplicationController
     "rating_index" => "(p.rating.try(:value) || 0), p.num_reviews"
   }
   
-  expose(:manufacturers) { Manufacturer.order_by([:name, :asc]).cache }
+  expose(:manufacturers) { Manufacturer.sort(:name).all }
   expose(:manufacturers_by_id) do
     manufacturers.inject({}) {|h,m| h[m.id] = m; h }
   end

@@ -1,12 +1,13 @@
 class Price
-  include Mongoid::Document
-  include Mongoid::Timestamps
+  include MongoMapper::EmbeddedDocument
+  include MongoMapper::Plugins::Timestamps
   include Hardwarepedia::ModelMixins::RequiresFields
   
   embedded_in :product
   
-  field :url, :type => String
-  field :amount, :type => Float
+  key :url, String
+  key :amount, Float
+  timestamps!
   
   requires_fields :url, :amount
   

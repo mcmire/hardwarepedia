@@ -1,8 +1,8 @@
 <h1>Products</h1>
 
 <ul>
-  <% for manufacturer in manufacturers %>
-    <li><%= link_to manufacturer.name, :anchor => manufacturer.webkey %></li>
+  <% for manu in manufacturers %>
+    <li><%= link_to manu.name, :anchor => manu.webkey %></li>
   <% end %>
 </ul>
 
@@ -18,7 +18,8 @@
       </tr>
     </thead>
     <tbody>
-      <% for product in (products_by_manufacturer[manu] || []) %>
+      <% products = products_by_manufacturer[manu] %>
+      <% for product in products %>
         <% chipset = product.chipset %>
         <tr>
           <td><%= link_to product.full_name, product_path(product) %></td>

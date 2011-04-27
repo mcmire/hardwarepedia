@@ -1,37 +1,37 @@
 class Product
-  include Mongoid::Document
-  include Mongoid::Timestamps
+  include MongoMapper::Document
+  include MongoMapper::Plugins::IdentityMap
   include Hardwarepedia::ModelMixins::RequiresFields
-  
-  belongs_to :chipset, :class_name => "Product"
-  belongs_to :category
-  belongs_to :manufacturer
-  
-  has_many :implementations, :class_name => "Product", :inverse_of => :chipset
   
   # For right now we are just assuming that we are hitting one URL...
   # in the future if multiple URLs are involved maybe we could have a 'data'
   # field that holds info scraped from a URL
   
-  field :name
-  field :full_name
-  field :summary
-  field :specs, :type => Hash, :default => {}
-  field :num_reviews, :type => Integer
-  field :content_urls, :type => Set, :default => Set.new
-  field :official_urls, :type => Set, :default => Set.new
-  field :mention_urls, :type => Set, :default => Set.new
-  field :market_released_at, :type => Date
-  field :aggregated_score, :type => Float
-  field :is_chipset, :type => Boolean, :default => false
-  field :webkey
+  key :name
+  key :full_name
+  key :summary
+  key :specs, Hash, :default => {}
+  key :num_reviews, Integer
+  key :content_urls, Set, :default => Set.new
+  key :official_urls, Set, :default => Set.new
+  key :mention_urls, Set, :default => Set.new
+  key :market_released_at, Date
+  key :aggregated_score, Float
+  key :is_chipset, Boolean, :default => false
+  key :webkey
+  timestamps!
   
-  embeds_many :images
+  # Referenced associations
+  belongs_to :chipset, :class_name => "Product"
+  belongs_to :category
+  belongs_to :manufacturer
+  many :implementations, :class_name => "Product"
   
-  embeds_many :prices, :cascade_callbacks => true
-  embeds_many :ratings, :cascade_callbacks => true
-  
-  embeds_many :reviews, :cascade_callbacks => true
+  # Embedded associations
+  many :images
+  many :prices
+  many :ratings
+  many :reviews
   
   before_save :set_full_name, :set_webkey
   
@@ -56,12 +56,13 @@ class Product
   end
   
   def current_rating
-    self.ratings.order_by([:created_at, :desc]).first
+    self.ratings.sort {|a,b| b.created_at <=> a.created_at }.first
   end
   def current_price
-    self.prices.order_by([:created_at, :desc]).first
+    self.prices.sort {|a,b| b.created_at <=> a.created_at }.first
   end
   
+=begin
   def calculate_avg_price
     self.avg_price = prices.avg
   end
@@ -85,6 +86,7 @@ class Product
     benchmarks.create(benchmark)
     calculate_avg_benchmark
   end
+=end
   
   def set_full_name
     self.full_name = "#{manufacturer.name} #{name}"

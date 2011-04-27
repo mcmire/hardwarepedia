@@ -1,12 +1,11 @@
 class Spec
-  include Mongoid::Document
-  include Mongoid::Timestamps
+  include MongoMapper::EmbeddedDocument
+  include MongoMapper::Plugins::Timestamps
   
-  embedded_in :product
-  
-  field :name
-  field :value
-  field :type
+  key :name, String
+  key :value, String
+  key :type, String
+  timestamps!
   
   def <=>(other)
     SpecTypes.compare(type, self, other)

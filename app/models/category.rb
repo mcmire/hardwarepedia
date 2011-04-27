@@ -1,10 +1,10 @@
 class Category
-  include Mongoid::Document
-  include Mongoid::Timestamps
+  include MongoMapper::Document
   include Hardwarepedia::ModelMixins::RequiresFields
 
-  field :name
-  field :webkey
+  key :name, String
+  key :webkey, String
+  timestamps!
   
   before_save :set_webkey
   
