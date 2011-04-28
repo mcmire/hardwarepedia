@@ -6,17 +6,10 @@ development:
   <<: *defaults
   database: hardwarepedia_development
   
-development:
+production:
   <<: *defaults
-  database: hardwarepedia_development
+  database: hardwarepedia_production
 
 test:
   <<: *defaults
   database: hardwarepedia_test
-
-# set these environment variables on your prod server
-#production:
-#  <<: *defaults
-#  database: hardwarepedia
-#  username: <%= ENV['MONGO_USERNAME'] %>
-#  password: <%= ENV['MONGO_PASSWORD'] %>
