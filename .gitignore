@@ -9,3 +9,4 @@ tmp/**/*
 vendor/ruby
 vendor/jruby
 public/stylesheets
+.rvmrc
