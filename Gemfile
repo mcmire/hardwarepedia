@@ -85,6 +85,11 @@ gem 'colored', '1.2', :require => false
 # Provides String#to_ascii which is useful when screenscraping
 gem 'stringex', '1.2.1'
 
+platforms :jruby do
+  gem 'trinidad', '~> 1.1.1'
+  gem 'trinidad_daemon_extension'
+end
+
 group :development do
   # (We include this in development to expose Rake tasks without having to type RAILS_ENV=test)
   #gem 'rspec-rails', '~> 2.2.0'
@@ -110,11 +115,6 @@ group :development do
   platforms :jruby do
     # Speeds up the highline gem (which Capistrano uses) in JRuby
     gem 'ffi-ncurses', '~> 0.3.3'
-  end
-  
-  platforms :jruby do
-    #gem 'kirk'
-    gem 'trinidad'
   end
 end
 
