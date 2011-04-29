@@ -7,6 +7,8 @@ namespace :scrape do
     # model when screenscraping product pages:
     # "LoadError: Expected app/models/product.rb to define Product"
     Dir[ Rails.root.join("app/models/**/*.rb") ].each {|fn| require fn }
+    
+    require 'hardwarepedia/scraper'
   end
   
   task :products => :init do
