@@ -36,7 +36,7 @@ gem 'compass', '0.10.6'
 
 # DRY up your views
 # Code: http://github.com/fredwu/inherited_resources_views
-gem 'inherited_resources_views', '0.4.1'
+#gem 'inherited_resources_views', '0.4.1'
 
 # Cleaner way of writing forms, and handles associations, too
 # Code: http://github.com/plataformatec/simple_form
