@@ -1,3 +1,5 @@
+require 'hardwarepedia/model_mixins/requires_fields'
+
 class Product
   include MongoMapper::Document
   include MongoMapper::Plugins::IdentityMap

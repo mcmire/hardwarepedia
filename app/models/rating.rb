@@ -1,3 +1,5 @@
+require 'hardwarepedia/model_mixins/requires_fields'
+
 class Rating
   include MongoMapper::EmbeddedDocument
   include MongoMapper::Plugins::Timestamps

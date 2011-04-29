@@ -1,4 +1,5 @@
 require 'digest/md5'
+require 'hardwarepedia/model_mixins/requires_fields'
 
 class Url
   def self.md5(content)
