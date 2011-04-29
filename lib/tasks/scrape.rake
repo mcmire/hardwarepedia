@@ -1,14 +1,18 @@
 namespace :scrape do
-  task :init do
-    Rake::Task['environment'].invoke
+  task :init => :environment do
     $stdout.sync = true   # disable buffering
     
-    # Load all the models since we're getting an error accessing the Product
-    # model when screenscraping product pages:
-    # "LoadError: Expected app/models/product.rb to define Product"
-    Dir[ Rails.root.join("app/models/**/*.rb") ].each {|fn| require fn }
-    
-    require 'hardwarepedia/scraper'
+    if Rails.env.production?
+      # Load all the eager load paths since Rails does not do this when running
+      # Rake tasks, even in production mode
+      Dir[ Rails.root.join("lib/hardwarepedia/**/*.rb") ].each {|fn| require_dependency fn }
+      Dir[ Rails.root.join("app/models/**/*.rb") ].each {|fn| require_dependency fn }
+    else
+      # Load all the models since we're getting an error accessing the Product
+      # model when screenscraping product pages:
+      # "LoadError: Expected app/models/product.rb to define Product"
+      Dir[ Rails.root.join("app/models/**/*.rb") ].each {|fn| require_dependency fn }
+    end
   end
   
   task :products => :init do

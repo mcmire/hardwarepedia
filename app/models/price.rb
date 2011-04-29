@@ -1,5 +1,3 @@
-require 'hardwarepedia/model_mixins/requires_fields'
-
 class Price
   include MongoMapper::EmbeddedDocument
   include MongoMapper::Plugins::Timestamps

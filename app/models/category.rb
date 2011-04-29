@@ -1,5 +1,3 @@
-require 'hardwarepedia/model_mixins/requires_fields'
-
 class Category
   include MongoMapper::Document
   include Hardwarepedia::ModelMixins::RequiresFields

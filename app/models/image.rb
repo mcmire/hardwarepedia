@@ -1,5 +1,3 @@
-require 'hardwarepedia/model_mixins/requires_fields'
-
 class Image
   include MongoMapper::EmbeddedDocument
   include MongoMapper::Plugins::Timestamps

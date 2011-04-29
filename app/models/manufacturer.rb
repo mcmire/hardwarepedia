@@ -1,5 +1,3 @@
-require 'hardwarepedia/model_mixins/requires_fields'
-
 class Manufacturer
   include MongoMapper::Document
   include MongoMapper::Plugins::IdentityMap
