@@ -1,0 +1,56 @@
+
+p= link_to "« Back to products", products_path
+
+p= [category.linked_name, manufacturer.linked_name, product.full_name].join("»")
+
+h1= product.full_name
+
+- if product.is_chipset?
+  p: i (This is a chipset)
+  p Implementations:
+  ul
+    - product.implementations.each do |impl|
+      li= impl.linked_full_name
+- elsif chipset
+  p
+    b Chipset:
+    = chipset.linked_full_name
+
+- if product.content_urls.any?
+  p
+    b URL:
+    = product.linked_content_url
+
+- if product.prices.any?
+  h2 Prices
+  - product.prices_grouped_by_retailer.each do |retailer_name, prices|
+    h3= retailer_name
+    ul
+      - prices.each do |price|
+        li
+          b= price.formatted_created_at
+          = price.formatted_amount
+
+- if product.ratings.any?
+  h2 Ratings
+  - product.ratings_grouped_by_retailer.each do |retailer_name, rating|
+    h3= retailer_name
+    ul
+      - ratings.each do |rating|
+        li
+          b= rating.formatted_created_at
+          = rating.formatted_value
+
+- if product.images.any?
+  h2 Images
+  p
+    - product.images.each do |image|
+      = image.tag
+
+- if product.specs.any?
+  h2 Specs
+  table#specs
+    - product.specs.each do |name, value|
+      tr
+        th= name
+        th= value

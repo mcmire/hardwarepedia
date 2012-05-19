@@ -1,0 +1,13 @@
+doctype html
+
+html
+  head
+    title= window_title
+    = stylesheet_link_tag 'bundle'
+    = csrf_meta_tags
+  body(body_tags)
+    = yield
+    javascript:
+      var rails = {
+        env: "#{Rails.env.to_s}"
+      }
