@@ -11,20 +11,21 @@ gem 'pg', '0.13.2'
 
 #---
 
-gem 'focused_controller', '0.1.0'
-gem 'slim', '1.2.0'
+gem 'mustache', '0.99.4'
+gem 'stache', '0.9.1'
 gem 'hierarchical_page_titles', '0.2.0'
 gem 'simple-navigation', '3.7.0'
 # Make sure you have libxml-dev and libxslt-dev installed before you install this
 gem 'nokogiri', '1.5.2'
 gem 'yajl-ruby', '1.1.0'
 gem 'active_hash', '0.9.10'
-# For some reason it doesn't work if we require this right away
+# For some reason this doesn't work if we require it right away
 gem 'colored', '1.2', :require => false
 # Provides String#to_ascii which is useful when screenscraping
 gem 'stringex', '1.4.0'
 gem 'queue_classic', '2.0.0'
 gem 'rails_helper', '1.3.0'
+gem 'logging', '1.7.2'
 
 #---
 
