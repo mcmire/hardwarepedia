@@ -7,7 +7,7 @@ module Hardwarepedia
     LOG_FILENAME = Rails.root.join('log/scraper.log')
     # This is the max we can go before Postgres barfs
     # TODO: Raise max_connections in postgresql.conf??
-    NUM_THREADS = 20
+    NUM_THREADS = 10  #20
 
     class Error < StandardError; end
 
