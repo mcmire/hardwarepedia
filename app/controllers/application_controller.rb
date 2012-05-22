@@ -31,12 +31,17 @@ class ApplicationController < ActionController::Base
   # Read the explanation in
   # lib/hardwarepedia/controller_mixins/limited_exposure.rb for more.
   #
-  include Hardwarepedia::ControllerMixins::LimitedExposure
+  include Hardwarepedia::LimitedExposure
 
   # Add controller helpers which are useful in tagging the <body> tag with info
   # like the current controller and action, etc.
   #
   include Hardwarepedia::ControllerMixins::TaggedBody
+
+  # Add the ability to wrap actions in a class in order to keep methods
+  # specific to that action in one place. This is very similar to
+  # FocusedController.
+  extend Hardwarepedia::ControllerMixins::FocusedController
 
   # Add a default window title
   window_title "Hardwarepedia"
