@@ -4,6 +4,11 @@ class Reviewable < ActiveRecord::Base
   # in the future if multiple URLs are involved maybe we could have a 'data'
   # field that holds info scraped from a URL
 
+  serialize :specs, Hash
+  serialize :content_urls, Set
+  serialize :official_urls, Set
+  serialize :mention_urls, Set
+
   belongs_to :category
   belongs_to :manufacturer
 
@@ -12,10 +17,8 @@ class Reviewable < ActiveRecord::Base
   has_many :ratings
   has_many :reviews
 
-  serialize :specs, Hash
-  serialize :content_urls, Set
-  serialize :official_urls, Set
-  serialize :mention_urls, Set
+  before_save :_set_full_name
+  before_save :_set_webkey
 
   def prices_grouped_by_retailer
     grouped_prices = self.prices.to_a.group_by(&:retailer_name)
@@ -41,5 +44,13 @@ class Reviewable < ActiveRecord::Base
 
   def to_param
     webkey
+  end
+
+  def _set_full_name
+    self.full_name = "#{manufacturer.name} #{name}"
+  end
+
+  def _set_webkey
+    self.webkey = full_name.parameterize
   end
 end
