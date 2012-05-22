@@ -39,5 +39,7 @@ class Reviewable < ActiveRecord::Base
     self.prices.sort {|a,b| b.created_at <=> a.created_at }.first
   end
 
-  alias to_param webkey
+  def to_param
+    webkey
+  end
 end
