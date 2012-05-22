@@ -11,8 +11,8 @@ module Hardwarepedia
     attr_reader :data, :doc, :total_num_pages
 
     def initialize
-      @manufacturers_by_name = Manufacturer.all.to_a.to_hash_by(&:name)
-      @categories_by_name = Category.all.to_a.to_hash_by(&:name)
+      @manufacturers_by_name = Manufacturer.all.to_a.index_by(&:name)
+      @categories_by_name = Category.all.to_a.index_by(&:name)
       @data = {}
     end
 
