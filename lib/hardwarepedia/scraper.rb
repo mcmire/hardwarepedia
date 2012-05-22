@@ -4,6 +4,7 @@ require 'enumerator'
 
 module Hardwarepedia
   class Scraper
+    LOG_FILENAME = Rails.root.join('log/scraper.log')
     NUM_THREADS = 3
 
     class Error < StandardError; end
@@ -16,12 +17,16 @@ module Hardwarepedia
       @data = {}
     end
 
-    def configuration
+    def config
       @config ||= Configuration.build(self)
     end
 
     def logger
-      Configuration.logger
+      @logger ||= Logging.logger[self].tap do |logger|
+        appender = Logging.appenders.file(LOG_FILENAME)
+        logger.add_appenders(appender)
+        logger.level = :info
+      end
     end
 
     def docs
@@ -33,7 +38,7 @@ module Hardwarepedia
     end
 
     def scrape_products
-      configuration.each_category_page do |category_page|
+      config.each_category_page do |category_page|
         logger.info "Retailer: #{category_page.retailer_name}"
         logger.info "Category name: #{category_page.category_name}"
         logger.info "-------------------"
@@ -76,7 +81,7 @@ module Hardwarepedia
     def scrape_product(*args)
       if args.length == 3
         retailer_name, category_name, product_url = args
-        product_page = configuration.find_product(retailer_name, category_name)
+        product_page = config.find_product(retailer_name, category_name)
         unless product_page
           raise Error, "No product page for #{retailer_name} / #{category_name} ?!"
         end

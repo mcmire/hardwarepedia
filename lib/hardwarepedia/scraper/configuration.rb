@@ -55,10 +55,6 @@ module Hardwarepedia
           @category_name = category_name
         end
 
-        def logger
-          @config.logger
-        end
-
         def scraper
           @config.scraper
         end
@@ -71,10 +67,6 @@ module Hardwarepedia
             config_file = Rails.root.join('config/scraper.rb')
             dsl.evaluate_config_file(config_file)
           end
-        end
-
-        def logger
-          Logging.logger[self]
         end
       end
 
@@ -110,10 +102,6 @@ module Hardwarepedia
         Page.new(self, retailer_name, category_name).tap do |page|
           mods.each {|mod| page.extend(mod) }
         end
-      end
-
-      def logger
-        self.class.logger
       end
     end
   end
