@@ -29,17 +29,20 @@ ActiveRecord::Schema.define(:version => 20120522041551) do
   end
 
   create_table "reviewables", :force => true do |t|
+    t.string   "type",                                                               :null => false
+    t.integer  "category_id",                                                        :null => false
+    t.integer  "manufacturer_id",                                                    :null => false
     t.string   "name",                                                               :null => false
     t.string   "full_name",                                                          :null => false
     t.string   "webkey",                                                             :null => false
     t.datetime "created_at",                                                         :null => false
     t.datetime "updated_at",                                                         :null => false
-    t.string   "summary"
-    t.string   "specs",              :default => "--- {}\n"
+    t.text     "summary"
+    t.text     "specs",              :default => "--- {}\n"
     t.integer  "num_reviews"
-    t.string   "content_urls",       :default => "--- !ruby/object:Set\nhash: {}\n"
-    t.string   "official_urls",      :default => "--- !ruby/object:Set\nhash: {}\n"
-    t.string   "mention_urls",       :default => "--- !ruby/object:Set\nhash: {}\n"
+    t.text     "content_urls",       :default => "--- !ruby/object:Set\nhash: {}\n"
+    t.text     "official_urls",      :default => "--- !ruby/object:Set\nhash: {}\n"
+    t.text     "mention_urls",       :default => "--- !ruby/object:Set\nhash: {}\n"
     t.date     "market_released_on"
     t.date     "Date"
     t.float    "aggregated_score"
@@ -48,7 +51,7 @@ ActiveRecord::Schema.define(:version => 20120522041551) do
 
   create_table "urls", :force => true do |t|
     t.string   "url",         :null => false
-    t.string   "content",     :null => false
+    t.text     "body",        :null => false
     t.string   "content_md5", :null => false
     t.datetime "created_at",  :null => false
     t.datetime "updated_at",  :null => false

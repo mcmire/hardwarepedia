@@ -4,6 +4,8 @@ class Manufacturer < ActiveRecord::Base
 
   before_save :_set_webkey
 
+  attr_accessible :name
+
   def to_param
     webkey
   end

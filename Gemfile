@@ -32,6 +32,7 @@ gem 'logging', '1.7.2'
 group :development do
   gem 'heroku', '~> 2.25.0'
   gem 'thin', '~> 1.3.1'
+  gem 'pry'
 end
 
 #---

@@ -4,14 +4,14 @@ login: &login
 development:
   <<: *login
   database: hardwarepedia_development
-  pool: 5
-  timeout: 5000
+  pool: 20
+  # timeout: 5000
 
 production:
   <<: *login
   database: hardwarepedia_production
-  pool: 5
-  timeout: 5000
+  pool: 20
+  # timeout: 5000
 
 test:
   <<: *login

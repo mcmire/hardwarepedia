@@ -17,6 +17,8 @@ class Reviewable < ActiveRecord::Base
   has_many :ratings
   has_many :reviews
 
+  attr_accessible :category, :manufacturer, :name, :full_name, :is_chipset
+
   before_save :_set_full_name
   before_save :_set_webkey
 

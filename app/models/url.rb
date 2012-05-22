@@ -6,5 +6,7 @@ class Url < ActiveRecord::Base
     Digest::MD5.hexdigest(content)
   end
 
+  attr_accessible :url, :body, :content_md5
+
   attr_accessor :doc
 end

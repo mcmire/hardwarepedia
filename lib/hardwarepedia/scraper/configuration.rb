@@ -70,6 +70,8 @@ module Hardwarepedia
         end
       end
 
+      attr_reader :scraper
+
       def initialize(scraper)
         @scraper = scraper
       end

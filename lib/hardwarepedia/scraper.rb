@@ -5,7 +5,9 @@ require 'enumerator'
 module Hardwarepedia
   class Scraper
     LOG_FILENAME = Rails.root.join('log/scraper.log')
-    NUM_THREADS = 3
+    # This is the max we can go before Postgres barfs
+    # TODO: Raise max_connections in postgresql.conf??
+    NUM_THREADS = 20
 
     class Error < StandardError; end
 
@@ -48,32 +50,42 @@ module Hardwarepedia
         # Visit the first page to get the total number of pages
         visiting(category_page, category_page.page_url(1)) do
           all_product_urls += category_page.product_urls
-          @total_num_pages = doc.at_xpath('//span[@id="totalPage"]').text.to_i
+          @total_num_pages = category_page.total_num_pages
 
-          threads = []
           category_page.page_urls(2).each_slice(NUM_THREADS) do |page_urls|
-            threads << Thread.new do
-              page_urls.each do |page_url|
-                visiting(category_page, page_url) do
-                  all_product_urls += category_page.product_urls
+            threads = []
+            page_urls.each do |page_url|
+              threads << Thread.new do
+                ActiveRecord::Base.connection_pool.with_connection do
+                  visiting(category_page, page_url) do
+                    all_product_urls += category_page.product_urls
+                  end
                 end
               end
             end
+            t = Time.now
+            threads.each {|t| t.join }
+            elapsed_time = Time.now - t
+            logger.info("Finished #{NUM_THREADS} threads in %f seconds (%.1f t/s)" % [elapsed_time, (NUM_THREADS.to_f / elapsed_time)])
           end
-          threads.each {|t| t.join }
           all_product_urls.sort!
           all_product_urls.uniq!
           #all_product_urls = [ all_product_urls[0] ]
 
-          threads = []
           all_product_urls.each_slice(NUM_THREADS).each do |product_urls|
-            threads << Thread.new do
-              product_urls.each do |product_url|
-                scrape_product(category_page.product_page, product_url)
+            threads = []
+            product_urls.each do |product_url|
+              threads << Thread.new do
+                ActiveRecord::Base.connection_pool.with_connection do
+                  scrape_product(category_page.product_page, product_url)
+                end
               end
             end
+            t = Time.now
+            threads.each {|t| t.join }
+            elapsed_time = Time.now - t
+            logger.info("Finished #{NUM_THREADS} threads in %f seconds (%.1f t/s)" % [elapsed_time, (NUM_THREADS.to_f / elapsed_time)])
           end
-          threads.each {|t| t.join }
         end
       end
     end
@@ -137,7 +149,7 @@ module Hardwarepedia
           logger.info "(Found chipset product '#{chipset_full_name}')"
         else
           logger.info "Creating chipset product '#{chipset_full_name}'"
-          chipset = ::Product.create!(:category => @category, :manufacturer => chipset_manufacturer, :name => chipset_model_name, :is_chipset => true)
+          chipset = ::Chipset.create!(:category => @category, :manufacturer => chipset_manufacturer, :name => chipset_model_name)
           # Eventually we will want to copy some of the attributes from this implementation product...
         end
         product.chipset = chipset
@@ -186,7 +198,7 @@ module Hardwarepedia
         full_path = uri.path + (uri.query ? "?#{uri.query}" : "")
         logger.info "Fetching #{url}..." if i == 0
         resp = Net::HTTP.start(uri.host, uri.port) do |http|
-          http.read_timeout = 20
+          http.read_timeout = 30
           http.get(full_path)
         end
         case resp
@@ -195,7 +207,7 @@ module Hardwarepedia
         else
           raise Error, "Error fetching #{url}: got status code #{resp.code} (#{resp.message})"
         end
-      rescue SocketError, Error => e
+      rescue Timeout::Error, SocketError, Error => e
         if i == 5
           raise Error, "#{e.class} fetching #{url}: #{e.message}"
         else
@@ -227,6 +239,8 @@ module Hardwarepedia
         else
           # The content of the page *has* changed since we last scraped it,
           # so just update the signature of the content
+          # FIXME: This is happening even if the content of the page hasn't
+          # really changed... probably because of banner ads
           logger.info "Already scraped <#{url}>, but it's changed since last scrape, so updating md5"
           yield
           u.content_md5 = content_md5
