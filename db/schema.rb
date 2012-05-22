@@ -11,7 +11,14 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120522040201) do
+ActiveRecord::Schema.define(:version => 20120522040946) do
+
+  create_table "categories", :force => true do |t|
+    t.string   "name",       :null => false
+    t.string   "webkey",     :null => false
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
 
   create_table "manufacturers", :force => true do |t|
     t.string   "name",         :null => false
