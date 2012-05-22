@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <title>{{window_title}}</title>
+    {{{styles}}}
+    {{{csrf_meta_tags}}}
+  </head>
+
+  <body {{body_tags}}>
+    {{{yield}}}
+    {{{scripts}}}
+    <script>
+      var rails = {
+        env: "{{rails_env}}"
+      }
+    </script>
+  </body>
+</html>

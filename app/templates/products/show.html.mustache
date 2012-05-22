@@ -1,0 +1,69 @@
+
+<p>{{back_to_products_link}}</p>
+
+<p>{{breadcrumb}}</p>
+
+{{#product}}
+
+  <h1>{{full_name}}</h1>
+
+  {{#is_chipset?}}
+    <p><i>(This is a chipset)</i></p>
+    <p>Implementations:</p>
+    <ul>
+      {{#implementations}}
+        <li>{{linked_full_name}}</li>
+      {{/implemenations}}
+    </ul>
+  {{/is_chipset?}}
+
+  {{#chipset}}
+    <p><b>Chipset:</b> {{linked_full_name}}</p>
+  {{/chipset}}
+
+  {{#prices}}
+    <h2>Prices</h2>
+    {{#prices_grouped_by_retailer}}
+      <h3>{{retailer_name}}</h3>
+      <ul>
+        {{#prices}}
+          <li>
+            <b>{{formatted_created_at}}</b> {{formatted_amount}}
+          </li>
+        {{/prices}}
+      </ul>
+    {{/prices_grouped_by_retailer}}
+  {{/prices}}
+
+  {{#ratings}}
+    <h2>Ratings</h2>
+    {{#ratings_grouped_by_retailer}}
+      <h3>{{retailer_name}}</h3>
+      <ul>
+        {{#ratings}}
+          <li>
+            <b>{{formatted_created_at}}</b> {{formatted_value}}
+          </li>
+        {{/ratings}}
+      </ul>
+    {{/ratings_grouped_by_retailer}}
+  {{/ratings}}
+
+  {{#has_images?}}
+    <h2>Images</h2>
+    <p>{{#images}}{{tag}}{{/images}}</p>
+  {{/has_images}}
+
+  {{#has_specs?}}
+    <h2>Specs</h2>
+    <table id="specs">
+      {{#specs}}
+        <tr>
+          <th class="name">{{name}}</th>
+          <td class="value">{{value}}</th>
+        </tr>
+      {{/specs}}
+    </table>
+  {{/has_specs?}}
+
+{{/product}}
