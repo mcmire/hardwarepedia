@@ -7,9 +7,10 @@ module Hardwarepedia
           @config = config
         end
 
-        def evaluate_config_file(config_file)
+        def evaluate_config_file(config_filename)
           # borrowed from Bundler::Dsl
-          instance_eval(File.read(config_file), config_file, 1)
+          config_filename = config_filename.to_s
+          instance_eval(File.read(config_filename), config_filename, 1)
         end
 
         #---
@@ -29,7 +30,8 @@ module Hardwarepedia
           page = @config.build_page(@retailer_name, @category_name, mods)
           @category_page = page
 
-          retailer = (pages[@retailer_name] ||= {})
+          # TODO: Clean this up, law of Demeter
+          retailer = (@config.pages[@retailer_name] ||= {})
           retailer[@category_name] = [page]
         end
 
@@ -39,7 +41,8 @@ module Hardwarepedia
           @category_page.product_page = page
           page.category_page = @category_page
 
-          pages[@retailer_name][@category_name][1] = page
+          # TODO: Clean this up, law of Demeter
+          @config.pages[@retailer_name][@category_name][1] = page
         end
       end
 

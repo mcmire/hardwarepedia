@@ -1,5 +1,7 @@
 
 class Category < ActiveRecord::Base
+  attr_accessible :name
+
   before_save :_set_webkey
 
   def to_param
