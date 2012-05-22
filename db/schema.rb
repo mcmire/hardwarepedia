@@ -25,7 +25,7 @@ ActiveRecord::Schema.define(:version => 20120522060756) do
     t.string   "url",           :null => false
     t.datetime "created_at",    :null => false
     t.datetime "updated_at",    :null => false
-    t.string   "caption"
+    t.text     "caption"
   end
 
   create_table "manufacturers", :force => true do |t|

@@ -5,7 +5,7 @@ class CreateImages < ActiveRecord::Migration
       t.string :url, :null => false
       t.datetime :created_at, :null => false
       t.datetime :updated_at, :null => false
-      t.string :caption
+      t.text :caption
     end
   end
 
