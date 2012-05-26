@@ -26,6 +26,7 @@ gem 'stringex', '1.4.0'
 gem 'queue_classic', '2.0.0'
 gem 'rails_helper', '1.3.0'
 gem 'logging', '1.7.2'
+gem 'logging-rails', '0.4.0'
 
 #---
 
