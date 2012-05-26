@@ -1,5 +1,5 @@
 
-ProductPresenter = ReviewablePresenter.define do
+class ProductPresenter < ReviewablePresenter
   def linked_chipset
     raise 'ok'
     if chipset

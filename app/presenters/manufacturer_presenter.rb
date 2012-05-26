@@ -1,5 +1,5 @@
 
-ManufacturerPresenter = Presenter.define do
+class ManufacturerPresenter < Presenter
   def locally_linked_name
     view.link_to name, :anchor => webkey
   end
@@ -21,7 +21,7 @@ ManufacturerPresenter = Presenter.define do
   end
 
   def products
-    ProductPresenter.present!(super)
+    ProductPresenter.wrap(self, manufacturer.products)
   end
 
   def _sorted_link_to(link_text, sort_key, params={})

@@ -1,5 +1,5 @@
 
-ChipsetPresenter = ReviewablePresenter.define do
+class ChipsetPresenter < ReviewablePresenter
   def linked_chipset
     "Yes"
   end

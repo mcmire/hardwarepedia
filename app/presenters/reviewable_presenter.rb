@@ -1,5 +1,5 @@
 
-ReviewablePresenter = Presenter.define do
+class ReviewablePresenter < Presenter
   def linked_full_name
     view.link_to(full_name, view.product_path(self))
   end

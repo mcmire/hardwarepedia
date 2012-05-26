@@ -1,9 +1,10 @@
 
 class Products::Index < Stache::Mustache::View
   def manufacturers
-    @manufacturers ||= ManufacturerPresenter.present!(
-      Manufacturer.includes(:products => [:ratings, :prices]).order(:name).limit(1)
-    )
+    @manufacturers ||= begin
+      manufacturers = Manufacturer.includes(:products => [:ratings, :prices]).order(:name).limit(1)
+      ManufacturerPresenter.wrap(self, manufacturers)
+    end
   end
 
   def has_manufacturers?
