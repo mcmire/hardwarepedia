@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120522060756) do
+ActiveRecord::Schema.define(:version => 20120526072454) do
 
   create_table "categories", :force => true do |t|
     t.string   "name",       :null => false
@@ -70,7 +70,6 @@ ActiveRecord::Schema.define(:version => 20120522060756) do
     t.text     "official_urls",      :default => "--- !ruby/object:Set\nhash: {}\n"
     t.text     "mention_urls",       :default => "--- !ruby/object:Set\nhash: {}\n"
     t.date     "market_released_on"
-    t.date     "Date"
     t.float    "aggregated_score"
     t.boolean  "is_chipset"
   end
