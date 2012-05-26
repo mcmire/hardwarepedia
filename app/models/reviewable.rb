@@ -19,6 +19,8 @@ class Reviewable < ActiveRecord::Base
 
   attr_accessible :category, :manufacturer, :name, :full_name, :is_chipset
 
+  validates_uniqueness_of :full_name
+
   before_save :_set_full_name
   before_save :_set_webkey
 

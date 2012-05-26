@@ -24,7 +24,7 @@ gem 'colored', '1.2', :require => false
 # Provides String#to_ascii which is useful when screenscraping
 gem 'stringex', '1.4.0'
 gem 'queue_classic', '2.0.0'
-gem 'rails_helper', '1.3.0'
+gem 'map'
 gem 'logging', '1.7.2'
 gem 'logging-rails', '0.4.0'
 
@@ -34,6 +34,7 @@ group :development do
   gem 'heroku', '~> 2.25.0'
   gem 'thin', '~> 1.3.1'
   gem 'pry'
+  gem 'debugger'
 end
 
 #---

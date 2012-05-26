@@ -22,7 +22,7 @@ ActiveRecord::Schema.define(:version => 20120522060756) do
 
   create_table "images", :force => true do |t|
     t.integer  "reviewable_id"
-    t.string   "url",           :null => false
+    t.text     "url",           :null => false
     t.datetime "created_at",    :null => false
     t.datetime "updated_at",    :null => false
     t.text     "caption"

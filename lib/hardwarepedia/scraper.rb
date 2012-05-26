@@ -137,7 +137,11 @@ module Hardwarepedia
         product.specs = specs
 
         chipset_manufacturer_name = specs.delete("Chipset Manufacturer")
-        chipset_model_name = specs.delete("GPU").sub(%r{\s*\(.+?\)$}, "")
+        begin
+          chipset_model_name = specs.delete("GPU").sub(%r{\s*\(.+?\)$}, "")
+        rescue
+          binding.pry
+        end
         if chipset_manufacturer = @manufacturers_by_name[chipset_manufacturer_name]
           logger.info "(Reading chipset manufacturer '#{chipset_manufacturer_name}' from cache)"
         else

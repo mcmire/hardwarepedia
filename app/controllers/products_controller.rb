@@ -10,10 +10,11 @@ class ProductsController < ApplicationController
       end
     end
 
-    let(:sort_key) { params[:sort_key] || session[:sort_key] || "full_name" }
+    expose(:sort_key) { params[:sort_key] || session[:sort_key] || "full_name" }
 
-    let(:sort_order) { params[:sort_order] || session[:sort_order] || "asc" }
+    expose(:sort_order) { params[:sort_order] || session[:sort_order] || "asc" }
 
+=begin
     let(:products) {
       products = Product.all.to_a
       # Schwartzian transform
@@ -52,6 +53,7 @@ class ProductsController < ApplicationController
         "rating_index" => "(p.rating.try(:value) || 0), p.num_reviews"
       }
     end
+=end
 
   end
 

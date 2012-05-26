@@ -22,7 +22,6 @@ class ApplicationController < ActionController::Base
 
   # Turn on cross-site request forgery protection.
   # http://guides.rubyonrails.org/security.html#cross-site-request-forgery-csrf
-  #
   protect_from_forgery
 
   # This lets you sanely define values that you can use anywhere in your views
@@ -35,13 +34,16 @@ class ApplicationController < ActionController::Base
 
   # Add controller helpers which are useful in tagging the <body> tag with info
   # like the current controller and action, etc.
-  #
   include Hardwarepedia::ControllerMixins::TaggedBody
 
+  # Track the current ViewContext per request so we can access it from within
+  # presenters
+  include Hardwarepedia::ControllerMixins::ViewContextFilter
+
   # Add the ability to wrap actions in a class in order to keep methods
-  # specific to that action in one place. This is very similar to
-  # FocusedController.
-  extend Hardwarepedia::ControllerMixins::FocusedController
+  # specific to that action in one place. This is very similar to the
+  # FocusedController gem.
+  include Hardwarepedia::ControllerMixins::FocusedController
 
   # Add a default window title
   window_title "Hardwarepedia"

@@ -5,7 +5,7 @@
 
   <ul>
     {{#manufacturers}}
-      <li>{{locally_linked_name}}</li>
+      <li>{{{locally_linked_name}}}</li>
     {{/manufacturers}}
   </ul>
 
@@ -14,19 +14,19 @@
     <table>
       <thead>
         <tr>
-          <th class="name">{{link_to_sort_by_name}}</th>
-          <th class="chipset">{{link_to_sort_by_chipset}}</th>
-          <th class="price">{{link_to_sort_by_price}}</th>
-          <th class="rating">{{link_to_sort_by_rating}}</th>
+          <th class="name">{{{link_to_sort_by_name}}}</th>
+          <th class="chipset">{{{link_to_sort_by_chipset}}}</th>
+          <th class="price">{{{link_to_sort_by_price}}}</th>
+          <th class="rating">{{{link_to_sort_by_rating}}}</th>
         </tr>
       </thead>
       <tbody>
-        {{# products}}
+        {{#products}}
           <tr>
-            <td class="name">{{linked_full_name}}</td>
-            <td class="chipset">{{linked_chipset_or_yes}}</td>
-            <td class="price">{{formatted_price}}</td>
-            <td class="rating">{{formatted_rating}}</td>
+            <td class="name">{{{linked_full_name}}}</td>
+            <td class="chipset">{{{linked_chipset_or_yes}}}</td>
+            <td class="price">{{{formatted_price}}}</td>
+            <td class="rating">{{{formatted_rating}}}</td>
           </tr>
         {{/products}}
       </tbody>

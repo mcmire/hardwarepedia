@@ -2,9 +2,11 @@
 class Manufacturer < ActiveRecord::Base
   has_many :products
 
-  before_save :_set_webkey
-
   attr_accessible :name
+
+  validates_uniqueness_of :name
+
+  before_save :_set_webkey
 
   def to_param
     webkey
