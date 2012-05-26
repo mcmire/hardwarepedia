@@ -40,4 +40,6 @@ Hardwarepedia::Application.configure do
 
   # Show the logging configuration on STDOUT
   config.show_log_configuration = true
+
+  # QueryTrace.enable!
 end

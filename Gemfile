@@ -27,6 +27,7 @@ gem 'queue_classic', '2.0.0'
 gem 'map'
 gem 'logging', '1.7.2'
 gem 'logging-rails', '0.4.0'
+# gem 'query_trace3', :require => 'query_trace'
 
 #---
 

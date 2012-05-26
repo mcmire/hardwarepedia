@@ -1,5 +1,5 @@
 
-ManufacturerPresenter = Presenter.for(Manufacturer) do
+ManufacturerPresenter = Presenter.define do
   def locally_linked_name
     view.link_to name, :anchor => webkey
   end
@@ -21,7 +21,7 @@ ManufacturerPresenter = Presenter.for(Manufacturer) do
   end
 
   def products
-    ProductPresenter.where(:manufacturer_id => id)
+    ProductPresenter.present!(super)
   end
 
   def _sorted_link_to(link_text, sort_key, params={})

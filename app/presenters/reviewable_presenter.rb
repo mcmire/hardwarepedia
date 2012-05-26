@@ -1,15 +1,7 @@
 
-ReviewablePresenter = Presenter.for(Reviewable) do
+ReviewablePresenter = Presenter.define do
   def linked_full_name
-    view.link_to(full_name, h.product_path(chipset))
-  end
-
-  def linked_chipset_or_yes
-    if is_chipset?
-      'Yes'
-    elsif chipset
-      view.link_to(chipset.try(:full_name), view.product_path(chipset))
-    end
+    view.link_to(full_name, view.product_path(self))
   end
 
   def formatted_price
