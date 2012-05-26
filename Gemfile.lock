@@ -32,6 +32,7 @@ GEM
       multi_json (~> 1.0)
     addressable (2.2.8)
     arel (3.0.2)
+    awesome_print (1.0.2)
     bourbon (2.1.0)
       sass (>= 3.1)
     builder (3.0.0)
@@ -160,6 +161,7 @@ PLATFORMS
 
 DEPENDENCIES
   active_hash (= 0.9.10)
+  awesome_print
   bourbon (~> 2.1.0)
   bundler (~> 1.1.0)
   coffee-rails (~> 3.2.1)

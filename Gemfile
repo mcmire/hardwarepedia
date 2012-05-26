@@ -36,6 +36,7 @@ group :development do
   gem 'thin', '~> 1.3.1'
   gem 'pry'
   gem 'debugger'
+  gem 'awesome_print'
 end
 
 #---
