@@ -123,25 +123,22 @@ module Hardwarepedia
           logger.info "(Found product '#{manufacturer_name} #{model_name}')"
         else
           logger.info "Creating product '#{manufacturer_name} #{model_name}'"
-          product = ::Product.new(:full_name => full_name)
+          product = ::Product.create!(:full_name => full_name)
         end
         product.category = @category
-        if product.manufacturer = @manufacturers_by_name[manufacturer_name]
+        if manufacturer = @manufacturers_by_name[manufacturer_name]
           logger.info "(Reading manufacturer '#{manufacturer_name}' from cache)"
         else
           logger.info "Creating manufacturer '#{manufacturer_name}'"
-          product.manufacturer = @manufacturers_by_name[manufacturer_name] = Manufacturer.create!(:name => manufacturer_name)
+          manufacturer = @manufacturers_by_name[manufacturer_name] = Manufacturer.create!(:name => manufacturer_name)
         end
+        product.manufacturer = manufacturer
         product.name = model_name
         product.content_urls << product_url
         product.specs = specs
 
         chipset_manufacturer_name = specs.delete("Chipset Manufacturer")
-        begin
-          chipset_model_name = specs.delete("GPU").sub(%r{\s*\(.+?\)$}, "")
-        rescue
-          binding.pry
-        end
+        chipset_model_name = specs.delete("GPU").sub(%r{\s*\(.+?\)$}, "")
         if chipset_manufacturer = @manufacturers_by_name[chipset_manufacturer_name]
           logger.info "(Reading chipset manufacturer '#{chipset_manufacturer_name}' from cache)"
         else
@@ -178,7 +175,7 @@ module Hardwarepedia
             # We have the url of the thumbnail but we need a url of the entire image
             url = thumb_url.sub(/\?.+$/, "") + "?scl=2.4"
             unless product.images.where(:url => url).exists?
-              product.images << Image.new(:url => url, :caption => caption)
+              product.images.create!(:url => url, :caption => caption)
             end
           end
         end
@@ -277,14 +274,14 @@ module Hardwarepedia
       javascript = fetch("http://content.newegg.com/LandingPage/ItemInfo4ProductDetail.aspx?Item=#{sku}")
       json = javascript.sub(/^\s*var Product={};\s*var rawItemInfo=/m, "").sub(/;\s*Product=rawItemInfo;\s*$/m, "")
       hash = JSON.parse(json)
-      product.prices << Price.new(:url => product_url, :amount => hash["finalPrice"])
+      product.prices.create!(:url => product_url, :amount => hash["finalPrice"])
 
       # XXX: Should this be itemRating??
       rating_node = doc.at_xpath('//div[contains(@class, "grpRating")]//a[contains(@class, "itmRating")]/span')
       # Some products will naturally not have any reviews yet, so there is no rating.
       if rating_node && rating_raw_value = rating_node.text.presence
         num_reviews = rating_node.next.text.scan(/\d+/).first
-        product.ratings << Rating.new(:url => product_url, :raw_value => rating_raw_value, :num_reviews => num_reviews)
+        product.ratings.create!(:url => product_url, :raw_value => rating_raw_value, :num_reviews => num_reviews)
       end
     end
   end
