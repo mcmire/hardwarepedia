@@ -20,8 +20,10 @@ class ManufacturerPresenter < Presenter
     _sorted_link_to 'Current Rating', 'rating_index'
   end
 
-  def products
-    ProductPresenter.wrap(self, manufacturer.products)
+  def reviewables
+    manufacturer.reviewables.map { |r|
+      Product === r ? ProductPresenter.new(self, r) : ChipsetPresenter.new(self, r)
+    }
   end
 
   def _sorted_link_to(link_text, sort_key, params={})

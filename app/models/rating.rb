@@ -2,8 +2,6 @@
 class Rating < ActiveRecord::Base
   belongs_to :reviewable
 
-  attr_accessible :url, :raw_value, :num_reviews
-
   before_save :_interpret_raw_value
 
   def retailer_name

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120526072454) do
+ActiveRecord::Schema.define(:version => 20120526234324) do
 
   create_table "categories", :force => true do |t|
     t.string   "name",       :null => false
@@ -57,7 +57,7 @@ ActiveRecord::Schema.define(:version => 20120526072454) do
   create_table "reviewables", :force => true do |t|
     t.string   "type",                                                               :null => false
     t.integer  "category_id",                                                        :null => false
-    t.integer  "manufacturer_id",                                                    :null => false
+    t.integer  "manufacturer_id"
     t.string   "name",                                                               :null => false
     t.string   "full_name",                                                          :null => false
     t.string   "webkey",                                                             :null => false
@@ -71,15 +71,18 @@ ActiveRecord::Schema.define(:version => 20120526072454) do
     t.text     "mention_urls",       :default => "--- !ruby/object:Set\nhash: {}\n"
     t.date     "market_released_on"
     t.float    "aggregated_score"
-    t.boolean  "is_chipset"
+    t.boolean  "is_chipset",         :default => false,                              :null => false
+    t.integer  "state",              :default => 0
+    t.integer  "chipset_id"
   end
 
   create_table "urls", :force => true do |t|
-    t.string   "url",         :null => false
-    t.text     "body",        :null => false
-    t.string   "content_md5", :null => false
-    t.datetime "created_at",  :null => false
-    t.datetime "updated_at",  :null => false
+    t.string   "url",                         :null => false
+    t.text     "content_html",                :null => false
+    t.string   "content_md5",                 :null => false
+    t.datetime "created_at",                  :null => false
+    t.datetime "updated_at",                  :null => false
+    t.integer  "state",        :default => 0
   end
 
 end

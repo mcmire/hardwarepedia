@@ -7,6 +7,8 @@ class ReviewablePresenter < Presenter
   def formatted_price
     if current_price
       view.number_to_currency(current_price.amount, :precision => 2)
+    else
+      "Not known (yet)"
     end
   end
 
@@ -16,6 +18,8 @@ class ReviewablePresenter < Presenter
         current_rating.raw_value,
         view.pluralize(current_rating.num_reviews, 'review')
       ]
+    else
+      "N/A"
     end
   end
 end

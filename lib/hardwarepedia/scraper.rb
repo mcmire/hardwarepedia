@@ -14,8 +14,8 @@ module Hardwarepedia
     attr_reader :data, :doc, :total_num_pages
 
     def initialize
-      @manufacturers_by_name = Manufacturer.all.to_a.index_by(&:name)
-      @categories_by_name = Category.all.to_a.index_by(&:name)
+      # @manufacturers_by_name = Manufacturer.all.to_a.index_by(&:name)
+      # @categories_by_name = Category.all.to_a.index_by(&:name)
       @data = {}
     end
 
@@ -25,8 +25,9 @@ module Hardwarepedia
 
     def logger
       @logger ||= Logging.logger[self].tap do |logger|
-        appender = Logging.appenders.file(LOG_FILENAME)
-        logger.add_appenders(appender)
+        file_appender = Logging.appenders.file(LOG_FILENAME)
+        stdout_appender = Logging.appenders.stdout
+        logger.add_appenders(file_appender, stdout_appender)
         logger.level = :info
       end
     end
@@ -41,55 +42,14 @@ module Hardwarepedia
 
     def scrape_products
       config.each_category_page do |category_page|
-        logger.info "Retailer: #{category_page.retailer_name}"
-        logger.info "Category name: #{category_page.category_name}"
-        logger.info "-------------------"
-        @category = fetch_category(category_page.category_name)
-
-        all_product_urls = []
-        # Visit the first page to get the total number of pages
-        visiting(category_page, category_page.page_url(1)) do
-          all_product_urls += category_page.product_urls
-          @total_num_pages = category_page.total_num_pages
-
-          category_page.page_urls(2).each_slice(NUM_THREADS) do |page_urls|
-            threads = []
-            page_urls.each do |page_url|
-              threads << Thread.new do
-                ActiveRecord::Base.connection_pool.with_connection do
-                  visiting(category_page, page_url) do
-                    all_product_urls += category_page.product_urls
-                  end
-                end
-              end
-            end
-            t = Time.now
-            threads.each {|t| t.join }
-            elapsed_time = Time.now - t
-            logger.info("Finished #{NUM_THREADS} threads in %f seconds (%.1f t/s)" % [elapsed_time, (NUM_THREADS.to_f / elapsed_time)])
-          end
-          all_product_urls.sort!
-          all_product_urls.uniq!
-          #all_product_urls = [ all_product_urls[0] ]
-
-          all_product_urls.each_slice(NUM_THREADS).each do |product_urls|
-            threads = []
-            product_urls.each do |product_url|
-              threads << Thread.new do
-                ActiveRecord::Base.connection_pool.with_connection do
-                  scrape_product(category_page.product_page, product_url)
-                end
-              end
-            end
-            t = Time.now
-            threads.each {|t| t.join }
-            elapsed_time = Time.now - t
-            logger.info("Finished #{NUM_THREADS} threads in %f seconds (%.1f t/s)" % [elapsed_time, (NUM_THREADS.to_f / elapsed_time)])
-          end
-        end
+        product_urls = _get_category_product_urls(category_page)
+        _scrape_product_urls(category_page.product_page, product_urls)
       end
     end
 
+    # scrape_product(product_page, product_url)
+    # scrape_product(retailer_name, product_page, product_url)
+    #
     def scrape_product(*args)
       if args.length == 3
         retailer_name, category_name, product_url = args
@@ -108,55 +68,67 @@ module Hardwarepedia
         category_name = product_page.category_name
       end
 
-      visiting(product_page, product_url) do
-        values = doc.xpath('//div[@id="Specs"]//dl/dt | //div[@id="Specs"]//dl/dd').map {|node| node.text.sub(/:$/, "").strip }
-        specs = Hash[*values]
+      visiting(product_page, product_url, 'product') do
+        pairs = doc.xpath('.//div[@id="Specs"]//dl/*').map {|node| node.text.sub(/:$/, "").strip }
+        specs = Hash[*pairs]
         model_name = specs.delete("Model")
         manufacturer_name = specs.delete("Brand")
         if manufacturer_name.blank?
           # Have to do some more sleuthing...
-          manufacturer_name = doc.xpath('//div[@id="bcaBreadcrumbTop"]//dd[last()-1]/a/text()').first.text
+          manufacturer_name = doc.xpath('.//div[@id="bcaBreadcrumbTop"]//dd[last()-1]/a/text()').first.text
         end
-        full_name = "#{manufacturer_name} #{model_name}"
+        full_name = [manufacturer_name, model_name].join(" ")
 
-        if product = ::Product.where(:full_name => full_name).first
-          logger.info "(Found product '#{manufacturer_name} #{model_name}')"
+        # Save the product as soon as possible so that if other threads are
+        # processing this same product for some reason, they can see that the
+        # product already exists
+        if product = Product.where(:full_name => full_name).first
+          logger.info "(Found product '#{full_name}', updating)"
+          product.state = 0
+          product.save!
         else
-          logger.info "Creating product '#{manufacturer_name} #{model_name}'"
-          product = ::Product.create!(:full_name => full_name)
+          logger.info "Creating product '#{full_name}'"
+          product = Product.create!(
+            :category => @category,
+            :name => model_name,
+            :full_name => full_name
+          )
         end
-        product.category = @category
-        if manufacturer = @manufacturers_by_name[manufacturer_name]
-          logger.info "(Reading manufacturer '#{manufacturer_name}' from cache)"
-        else
-          logger.info "Creating manufacturer '#{manufacturer_name}'"
-          manufacturer = @manufacturers_by_name[manufacturer_name] = Manufacturer.create!(:name => manufacturer_name)
-        end
-        product.manufacturer = manufacturer
-        product.name = model_name
         product.content_urls << product_url
         product.specs = specs
 
+        if manufacturer = Manufacturer.where(:name => manufacturer_name).first
+          logger.info "(Reading manufacturer '#{manufacturer_name}' from cache)"
+        else
+          logger.info "Creating manufacturer '#{manufacturer_name}'"
+          manufacturer = Manufacturer.create!(:name => manufacturer_name)
+        end
+        product.manufacturer = manufacturer
+
         chipset_manufacturer_name = specs.delete("Chipset Manufacturer")
         chipset_model_name = specs.delete("GPU").sub(%r{\s*\(.+?\)$}, "")
-        if chipset_manufacturer = @manufacturers_by_name[chipset_manufacturer_name]
+        if chipset_manufacturer = Manufacturer.where(:name => chipset_manufacturer_name).first
           logger.info "(Reading chipset manufacturer '#{chipset_manufacturer_name}' from cache)"
         else
           logger.info "Creating chipset manufacturer '#{chipset_manufacturer_name}'"
-          chipset_manufacturer = @manufacturers_by_name[chipset_manufacturer_name] = Manufacturer.create!(:name => chipset_manufacturer_name)
+          chipset_manufacturer = Manufacturer.create!(:name => chipset_manufacturer_name)
         end
         chipset_full_name = "#{chipset_manufacturer_name} #{chipset_model_name}"
-        if chipset = ::Product.where(:manufacturer_id => chipset_manufacturer.id, :name => chipset_model_name).first
+        if chipset = chipset_manufacturer.products.where(:name => chipset_model_name).first
           logger.info "(Found chipset product '#{chipset_full_name}')"
         else
           logger.info "Creating chipset product '#{chipset_full_name}'"
-          chipset = ::Chipset.create!(:category => @category, :manufacturer => chipset_manufacturer, :name => chipset_model_name)
+          chipset = Chipset.create!(
+            :manufacturer => chipset_manufacturer,
+            :category => @category,
+            :name => chipset_model_name
+          )
           # Eventually we will want to copy some of the attributes from this implementation product...
         end
         product.chipset = chipset
 
         product.images = []
-        thumb_links = doc.xpath('//ul[contains(@class, "navThumbs")]//a')
+        thumb_links = doc.xpath('.//ul[contains(@class, "navThumbs")]//a')
         for thumb_link in thumb_links
           # this will give me back xml - i can read the fset element and get dx and dy to get the image dimensions
           "http://images17.newegg.com/is/image/newegg/14-125-367-Z01?req=fvctx,xml,UTF-8,4&scl=1"
@@ -183,13 +155,127 @@ module Hardwarepedia
         _scrape_product_details(product, product_url)
 
         logger.info "Saving product record for '#{product.full_name}'"
-        product.save!
+        product.state = 1
+
+        # Double check that the product doesn't already exist in the event that
+        # it has already been processed in another thread
+        if existing_product = Product.where(:full_name => product.full_name, :state => 1).first
+          existing_product.update_attributes!(product.attributes)
+        else
+          product.save!
+        end
       end
     rescue Error => e
       logger.error e
     end
 
   private
+    def _get_category_product_urls(category_page)
+      cache_key = Hardwarepedia::Util.cache_key(
+        'retailer_category_product_urls',
+        category_page.retailer_name,
+        category_page.category_name,
+      )
+      logger.info "Retailer: #{category_page.retailer_name}"
+      logger.info "Category name: #{category_page.category_name}"
+      logger.info "-------------------"
+      @category = fetch_category(category_page.category_name)
+
+      Rails.cache.fetch(cache_key, :expires_in => 1.day) {
+        # Visit the first page to get the total number of pages, then use the
+        # pagination links on that page to go through the rest of the pages
+        # and get a list of product urls
+        all_product_urls = []
+        visiting(category_page, category_page.page_url(1), 'page') do
+          all_product_urls += category_page.product_urls
+          # @total_num_pages = category_page.total_num_pages
+          _collect_remaining_product_urls!(category_page, all_product_urls)
+        end
+
+        # Now go through all the product urls and scrape each product
+        all_product_urls.sort.uniq
+      }
+    end
+
+    def _collect_remaining_product_urls!(category_page, all_product_urls)
+      use_threads = true #false
+
+      each_url = proc do |page_url|
+        visiting(category_page, page_url, 'page') do
+          all_product_urls += category_page.product_urls
+        end
+      end
+      each_urls = proc do |page_urls|
+        page_urls.each do |page_url|
+          each_url.call(page_url)
+        end
+      end
+
+      if use_threads
+        threads = []
+        old_each_url = each_url
+        each_url = proc do |page_url|
+          threads << Thread.new do
+            ActiveRecord::Base.connection_pool.with_connection do
+              old_each_url.call(page_url)
+            end
+          end
+        end
+        old_each_urls = each_urls
+        each_urls = proc do |all_page_urls|
+          all_page_urls.each_slice(NUM_THREADS) do |page_urls|
+            threads.clear
+            old_each_urls.call(page_urls)
+            t = Time.now
+            threads.each {|t| t.join }
+            elapsed_time = Time.now - t
+            logger.info("Finished #{NUM_THREADS} threads in %f seconds (%.1f t/s)" % [elapsed_time, (NUM_THREADS.to_f / elapsed_time)])
+          end
+        end
+      end
+
+      remaining_page_urls = category_page.page_urls(2)
+      each_urls.call(remaining_page_urls)
+    end
+
+    def _scrape_product_urls(product_page, all_product_urls)
+      use_threads = true #false
+
+      each_url = proc do |product_url|
+        scrape_product(product_page, product_url)
+      end
+      each_urls = proc do |urls|
+        urls.each do |url|
+          each_url.call(url)
+        end
+      end
+
+      if use_threads
+        threads = []
+        old_each_url = each_url
+        each_url = proc do |url|
+          threads << Thread.new do
+            ActiveRecord::Base.connection_pool.with_connection do
+              old_each_url.call(url)
+            end
+          end
+        end
+        old_each_urls = each_urls
+        each_urls = proc do |all_urls|
+          all_urls.each_slice(NUM_THREADS).each do |urls|
+            threads.clear
+            old_each_urls.call(urls)
+            t = Time.now
+            threads.each {|t| t.join }
+            elapsed_time = Time.now - t
+            logger.info("Finished #{NUM_THREADS} threads in %f seconds (%.1f t/s)" % [elapsed_time, (NUM_THREADS.to_f / elapsed_time)])
+          end
+        end
+      end
+
+      each_urls.call(all_product_urls)
+    end
+
     def fetch(url)
       uri = URI.parse(url)
       i = 1
@@ -224,34 +310,61 @@ module Hardwarepedia
 
     # This requires a block b/c we don't want the url to be saved until after
     # we've scraped the url
-    def visiting(page, url, &block)
+    # XXX: This actually no longer happens, but the block is still okay, I guess
+    def visiting(page, url, type, &block)
       body = fetch(url)
       doc = Nokogiri.parse(body)
-      docs.push doc
-      node = doc.at_xpath(page.content_xpath) or raise Error, "Couldn't find content at <#{page.content_xpath}>!"
-      content_html = node.to_html
-      content_md5 = Url.md5(content_html)
-      if u = Url.where(:url => url).first
+      node_set = doc.xpath(page.content_xpath)
+      unless node_set
+        raise Error, "Couldn't find content at <#{page.content_xpath}>!"
+      end
+
+      # Remove script and style tags
+      node_set.xpath('.//script | .//style').unlink
+
+      page.preprocess!(node_set) if page.respond_to?(:preprocess!)
+      docs << node_set
+      content_html = node_set.to_html
+      content_md5 = Url.digest_content(content_html)
+      if u = Url.find(url)
+        # logger.info "Url: #{url}"
+        # require 'diffy'
+        # diff = Diffy::Diff.new(u.content_html, content_html)
+        # puts diff.to_s(:color)
+        # exit
+
         # We've scraped this URL before.
-        if u.content_md5 == content_md5
+        if type == 'product' && u.content_md5 == content_md5
           # The content of this page hasn't changed since we last scraped it,
           # so no need to scrape it again
           logger.info "(Already scraped <#{url}>, and it hasn't changed since last scrape)"
         else
           # The content of the page *has* changed since we last scraped it,
           # so just update the signature of the content
-          # FIXME: This is happening even if the content of the page hasn't
-          # really changed... probably because of banner ads
-          logger.info "Already scraped <#{url}>, but it's changed since last scrape, so updating md5"
-          yield
+          if type == 'product'
+            logger.info "Already scraped <#{url}>, but it's changed since last scrape, so updating md5"
+          else
+            logger.info "Scraping <#{url}> regardless of content since it's a collection page"
+          end
+          u.state = 0
           u.content_md5 = content_md5
-          u.save!
+          u.save
+          yield
+          u.state = 1
+          u.save
         end
       else
-        logger.info "Haven't scraped <#{url}> yet, content md5 is #{content_md5}"
-        yield
         # We haven't scraped this URL yet, so add it to the database.
-        Url.create!(:url => url, :body => body, :content_md5 => content_md5)
+        logger.info "Haven't scraped <#{url}> yet, content md5 is #{content_md5}"
+        u = Url.create(
+          :url => url,
+          :content_html => content_html,
+          :content => content_md5,
+          :kind => type
+        )
+        yield
+        u.state = 1
+        u.save
       end
       docs.pop
     rescue Error => e
@@ -259,25 +372,25 @@ module Hardwarepedia
     end
 
     def fetch_category(category_name)
-      if category = @categories_by_name[category_name]
+      if category = Category.where(:name => category_name).first
         logger.info "(Reading category '#{category_name}' from cache)"
       else
         logger.info "Creating category '#{category_name}'"
-        category = @categories_by_name[category_name] = Category.create!(:name => category_name)
+        category = Category.create!(:name => category_name)
       end
       category
     end
 
     def _scrape_product_details(product, product_url)
       # Are you serious
-      sku = doc.at_xpath('//div[@id="bcaBreadcrumbTop"]//dd[last()]').text.sub(/^Item[ ]*#:[ ]*/, "").to_ascii.strip
+      sku = doc.at_xpath('.//div[@id="bcaBreadcrumbTop"]//dd[last()]').text.sub(/^Item[ ]*#:[ ]*/, "").to_ascii.strip
       javascript = fetch("http://content.newegg.com/LandingPage/ItemInfo4ProductDetail.aspx?Item=#{sku}")
       json = javascript.sub(/^\s*var Product={};\s*var rawItemInfo=/m, "").sub(/;\s*Product=rawItemInfo;\s*$/m, "")
       hash = JSON.parse(json)
       product.prices.create!(:url => product_url, :amount => hash["finalPrice"])
 
       # XXX: Should this be itemRating??
-      rating_node = doc.at_xpath('//div[contains(@class, "grpRating")]//a[contains(@class, "itmRating")]/span')
+      rating_node = doc.at_xpath('.//div[contains(@class, "grpRating")]//a[contains(@class, "itmRating")]/span')
       # Some products will naturally not have any reviews yet, so there is no rating.
       if rating_node && rating_raw_value = rating_node.text.presence
         num_reviews = rating_node.next.text.scan(/\d+/).first

@@ -37,6 +37,7 @@ group :development do
   gem 'pry'
   gem 'debugger'
   gem 'awesome_print'
+  gem 'diffy'
 end
 
 #---

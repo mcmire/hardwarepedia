@@ -5,3 +5,9 @@
 require File.expand_path('../config/application', __FILE__)
 
 Hardwarepedia::Application.load_tasks
+
+$RUNNING_RAKE_TASK = 1
+
+task :noop do
+  puts 'does nothing'
+end

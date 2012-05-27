@@ -16,12 +16,18 @@ namespace :scrape do
     end
   end
 
-  task :products => :init do
-    #puts "Clearing out manufacturers and products..."
-    #Manufacturer.delete_all
-    #Product.delete_all
-    #Url.delete_all
+  def clear_all_the_things
+    puts "Clearing out everything first..."
+    Manufacturer.delete_all
+    Category.delete_all
+    Reviewable.delete_all
+    Url.delete_all
+    # TODO: Stop hardcoding this
+    Rails.cache.delete_matched(/^retailer_category_product_urls::/)
+  end
 
+  task :products => :init do
+    clear_all_the_things
     Hardwarepedia::Scraper.new.scrape_products
   end
 
@@ -29,6 +35,8 @@ namespace :scrape do
     product_url = ENV["URL"] or raise "Must pass URL=..."
     retailer_name = "Newegg"
     category_name = "Graphics Cards"
+
+    # clear_all_the_things
 
     category = Category.where(:name => category_name).first
     Hardwarepedia::Scraper.new.scrape_product(retailer_name, category_name, product_url)

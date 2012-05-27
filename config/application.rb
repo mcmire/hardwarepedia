@@ -40,11 +40,13 @@ module Hardwarepedia
     # your app. As such, your models will need to explicitly whitelist or
     # blacklist accessible parameters by using an attr_accessible or
     # attr_protected declaration.
-    config.active_record.whitelist_attributes = true
+    config.active_record.whitelist_attributes = false
 
     # Enable the asset pipeline
     config.assets.enabled = true
     # Version of your assets, change this if you want to expire all your assets
     config.assets.version = '1.0'
+
+    config.cache_store = [:file_store, Rails.root.join('tmp/cache'), :expires_in => 1.day]
   end
 end

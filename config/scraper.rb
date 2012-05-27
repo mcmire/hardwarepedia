@@ -3,7 +3,7 @@ retailer "Newegg" do
   base_category do
     def total_num_pages
       @total_num_pages ||= begin
-        text = scraper.doc.at_xpath("//div[contains(@class, 'recordCount')]").text
+        text = scraper.doc.at_xpath(".//div[contains(@class, 'recordCount')]").text
         match = text.match(/Showing \s* (\d+)-(\d+) \s* of \s* (\d+)/x)
         start, finish, count = match.captures.map(&:to_i)
         count / (finish - start + 1)  # auto-floor
@@ -19,11 +19,23 @@ retailer "Newegg" do
     end
 
     def product_urls
-      scraper.doc.xpath("//span[contains(@class, 'itemDescription')]/parent::a").map {|link| link["href"] }
+      scraper.doc.xpath(".//span[contains(@class, 'itemDescription')]/parent::a").map {|link| link["href"] }
     end
 
     def content_xpath
-      %{//div[@id="bcaProductCell"]}
+      %{.//div[@id="categoryNavTop"] | .//div[@id="bcaProductCell"]}
+    end
+
+    def preprocess!(node_set)
+      # Remove the featured product from the product page as that is going to
+      # change every refresh
+      xpath = %{.//div[contains(@class, "itemCell") and contains(@class, "featuredProduct")]}
+      if node = node_set.at_xpath(xpath)
+        node.unlink
+      end
+      if node_set.at_xpath(xpath)
+        raise 'Ugh, featuredProduct never got removed'
+      end
     end
   end
 

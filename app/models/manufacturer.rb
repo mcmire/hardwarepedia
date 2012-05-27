@@ -1,9 +1,10 @@
 
 class Manufacturer < ActiveRecord::Base
+  has_many :reviewables
   has_many :products
+  has_many :chipsets
 
-  attr_accessible :name
-
+  validates_presence_of :name
   validates_uniqueness_of :name
 
   before_save :_set_webkey
