@@ -3,7 +3,7 @@ retailer "Newegg" do
   base_category do
     def total_num_pages
       @total_num_pages ||= begin
-        text = scraper.doc.at_xpath(".//div[contains(@class, 'recordCount')]").text
+        text = doc.at_xpath(".//div[contains(@class, 'recordCount')]").text
         match = text.match(/Showing \s* (\d+)-(\d+) \s* of \s* (\d+)/x)
         start, finish, count = match.captures.map(&:to_i)
         count / (finish - start + 1)  # auto-floor
@@ -19,7 +19,7 @@ retailer "Newegg" do
     end
 
     def product_urls
-      scraper.doc.xpath(".//span[contains(@class, 'itemDescription')]/parent::a").map {|link| link["href"] }
+      doc.xpath(".//span[contains(@class, 'itemDescription')]/parent::a").map {|link| link["href"] }
     end
 
     def content_xpath

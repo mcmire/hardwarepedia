@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120526234324) do
+ActiveRecord::Schema.define(:version => 20120612040426) do
 
   create_table "categories", :force => true do |t|
     t.string   "name",       :null => false
@@ -75,6 +75,8 @@ ActiveRecord::Schema.define(:version => 20120526234324) do
     t.integer  "state",              :default => 0
     t.integer  "chipset_id"
   end
+
+  add_index "reviewables", ["full_name"], :name => "index_reviewables_on_full_name", :unique => true
 
   create_table "urls", :force => true do |t|
     t.string   "url",                         :null => false

@@ -19,9 +19,8 @@ class Reviewable < ActiveRecord::Base
   has_many :ratings
   has_many :reviews
 
-  validates_presence_of :category_id, :name
+  validates_presence_of :category_id, :name, :if => :complete?
   validates_presence_of :manufacturer_id, :if => :complete?
-  validates_uniqueness_of :full_name
   validate :_must_have_a_price, :if => :complete?
   requires_fields :specs, :content_urls, :if => :complete?
 

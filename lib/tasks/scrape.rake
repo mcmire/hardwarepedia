@@ -22,8 +22,7 @@ namespace :scrape do
     Category.delete_all
     Reviewable.delete_all
     Url.delete_all
-    # TODO: Stop hardcoding this
-    Rails.cache.delete_matched(/^retailer_category_product_urls::/)
+    # Hardwarepedia::Scraper::CategoryPageScraper.clear_cache
   end
 
   task :products => :init do
@@ -39,6 +38,11 @@ namespace :scrape do
     # clear_all_the_things
 
     category = Category.where(:name => category_name).first
-    Hardwarepedia::Scraper.new.scrape_product(retailer_name, category_name, product_url)
+    scraper = Hardwarepedia::Scraper.new
+    retailer = scraper.config.find_retailer(retailer_name)
+    product_page_scraper = Hardwarepedia::Scraper::ProductPageScraper.new(
+      scraper, retailer.product_page, product_url
+    )
+    product_page_scraper.call
   end
 end

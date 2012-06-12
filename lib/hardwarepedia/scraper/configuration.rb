@@ -15,48 +15,78 @@ module Hardwarepedia
 
         #---
 
-        def retailer(retailer_name)
-          @retailer_name = retailer_name
-          yield
-        end
-
-        def base_category(&block)
-          @base_category = Module.new(&block)
-        end
-
-        def category(category_name, &block)
-          @category_name = category_name
-          mods = [ @base_category, Module.new(&block) ].compact
-          page = @config.build_page(@retailer_name, @category_name, mods)
-          @category_page = page
-
-          # TODO: Clean this up, law of Demeter
-          retailer = (@config.pages[@retailer_name] ||= {})
-          retailer[@category_name] = [page]
-        end
-
-        def product(&block)
-          mod = Module.new(&block)
-          page = @config.build_page(@retailer_name, @category_name, [mod])
-          @category_page.product_page = page
-          page.category_page = @category_page
-
-          # TODO: Clean this up, law of Demeter
-          @config.pages[@retailer_name][@category_name][1] = page
+        def retailer(retailer_name, &block)
+          retailer = Retailer.new(@config, retailer_name)
+          retailer.configure(&block)
+          @config.add_retailer(retailer)
         end
       end
 
-      class Page
-        attr_accessor :retailer_name, :category_name, :category_page, :product_page
+      class Retailer
+        attr_reader \
+          :config,
+          :name,
+          :base_category_module,
+          :category_pages,
+          :product_page
 
-        def initialize(config, retailer_name, category_name)
+        def initialize(config, name)
           @config = config
-          @retailer_name = retailer_name
+          @name = name
+          @category_pages = []
+        end
+
+        def configure(&block)
+          instance_eval(&block)
+        end
+
+        def base_category(&block)
+          @base_category_module = Module.new(&block)
+        end
+
+        def category(category_name, &block)
+          @category_pages << CategoryPage.new(self, category_name).configure(&block)
+        end
+
+        def product(&block)
+          @product_page = ProductPage.new(self).configure(&block)
+        end
+      end
+
+      class CategoryPage
+        attr_reader :retailer, :category_name
+
+        def initialize(retailer, category_name)
+          @retailer = retailer
           @category_name = category_name
         end
 
-        def scraper
-          @config.scraper
+        def doc
+          @retailer.config.scraper.doc
+        end
+
+        def configure(&block)
+          mod = @retailer.base_category_module
+          mods = []
+          mods << mod if mod
+          mods << Module.new(&block)
+          extend(*mods)
+        end
+      end
+
+      class ProductPage
+        attr_reader :retailer
+
+        def initialize(retailer)
+          @retailer = retailer
+        end
+
+        def doc
+          @retailer.config.scraper.doc
+        end
+
+        def configure(&block)
+          extend Module.new(&block)
         end
       end
 
@@ -70,40 +100,24 @@ module Hardwarepedia
         end
       end
 
-      attr_reader :scraper
+      attr_reader :scraper, :retailers
 
       def initialize(scraper)
         @scraper = scraper
+        @retailers = {}
+      end
+
+      def add_retailer(retailer)
+        @retailers[retailer.name] = retailer
+      end
+
+      def find_retailer(retailer_name)
+        @retailers[retailer_name]
       end
 
       def each_category_page(&block)
-        pages.each do |retailer_name, categories|
-          categories.each do |category_name, (category_page, product_page)|
-            yield category_page
-          end
-        end
-      end
-
-      def find_category(retailer_name, category_name)
-        @pages[retailer_name][category_name][0]
-      rescue NoMethodError
-        nil
-      end
-
-      def find_product(retailer_name, category_name)
-        @pages[retailer_name][category_name][1]
-      rescue NoMethodError
-        nil
-      end
-
-      def pages
-        @pages ||= {}
-      end
-
-      def build_page(retailer_name, category_name, mods)
-        Page.new(self, retailer_name, category_name).tap do |page|
-          mods.each {|mod| page.extend(mod) }
-        end
+        # TODO: Support multiple retailers
+        @retailers[@retailers.keys.first].category_pages.each(&block)
       end
     end
   end
