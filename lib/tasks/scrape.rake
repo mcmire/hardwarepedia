@@ -37,7 +37,6 @@ namespace :scrape do
 
     # clear_all_the_things
 
-    category = Category.where(:name => category_name).first
     scraper = Hardwarepedia::Scraper.new
     retailer = scraper.config.find_retailer(retailer_name)
     product_page_scraper = Hardwarepedia::Scraper::ProductPageScraper.new(

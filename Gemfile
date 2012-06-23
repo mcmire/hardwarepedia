@@ -7,7 +7,7 @@ gem 'bundler', '~> 1.1.0'
 
 gem 'rails', '3.2.3'
 
-gem 'pg', '0.13.2'
+gem 'redis', '3.0.0'
 
 #---
 
@@ -23,11 +23,10 @@ gem 'active_hash', '0.9.10'
 gem 'colored', '1.2', :require => false
 # Provides String#to_ascii which is useful when screenscraping
 gem 'stringex', '1.4.0'
-gem 'queue_classic', '2.0.0'
+# gem 'queue_classic', '2.0.0'
 gem 'map'
 gem 'logging', '1.7.2'
 gem 'logging-rails', '0.4.0'
-# gem 'query_trace3', :require => 'query_trace'
 
 #---
 

@@ -44,7 +44,7 @@ module Hardwarepedia
 
       page.preprocess!(node_set) if page.respond_to?(:preprocess!)
       content_html = node_set.to_html
-      content_md5 = Url.digest_content(content_html)
+      u2 = Url.new(content_html)
       if u = Url.find(url)
         # logger.info "Url: #{url}"
         # require 'diffy'
@@ -53,7 +53,7 @@ module Hardwarepedia
         # exit
 
         # We've scraped this URL before.
-        if true #type == 'product' && u.content_md5 == content_md5
+        if true #type == 'product' && u2.content_digest == content_digest
           # The content of this page hasn't changed since we last scraped it,
           # so no need to scrape it again
           logger.info "(Already scraped <#{url}>, and it hasn't changed since last scrape)"
@@ -66,7 +66,7 @@ module Hardwarepedia
             logger.info "Scraping <#{url}> regardless of content since it's a collection page"
           end
           u.state = 0
-          u.content_md5 = content_md5
+          u.content_digest = content_digest
           u.save
           yield doc
           u.state = 1
@@ -74,12 +74,10 @@ module Hardwarepedia
         end
       else
         # We haven't scraped this URL yet, so add it to the database.
-        logger.info "Haven't scraped <#{url}> yet, content md5 is #{content_md5}"
-        u = Url.create(
-          :url => url,
+        logger.info "Haven't scraped <#{url}> yet, content md5 is #{content_digest}"
+        u = Url.create(type, url,
           :content_html => content_html,
-          :content => content_md5,
-          :kind => type
+          :content => content_digest
         )
         yield doc
         u.state = 1
@@ -90,13 +88,7 @@ module Hardwarepedia
     end
 
     def find_or_create_category(category_name)
-      if category = Category.where(:name => category_name).first
-        logger.info "(Reading category '#{category_name}' from cache)"
-      else
-        logger.info "Creating category '#{category_name}'"
-        category = Category.create!(:name => category_name)
-      end
-      category
+      Category.find_or_create(category_name)
     end
 
     def scrape_products

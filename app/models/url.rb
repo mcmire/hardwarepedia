@@ -2,76 +2,49 @@
 require 'digest/md5'
 
 class Url
-  include ActiveModel::Validations
-  include ActiveModel::AttributeMethods
-
-  class << self
-    CACHE_NS = 'Url'.freeze
-
-    def find(url)
-      _cache.read _cache_key_for(url)
-    end
-
-    def create(attrs={})
-      new(attrs).tap {|u| u.save }
-    end
-
-    def digest_content(content)
-      Digest::MD5.hexdigest(content)
-    end
-
-    # Delete all urls, or urls of a certain type
-    def delete_all(opts={})
-      kind = opts[:kind] || '[^:]+'
-      _cache.delete_matched Regexp.new(_typed_cache_key_for(kind, nil))
-    end
-
-    def _cache_key_for(url)
-      url_hash = url ? Digest::MD5.hexdigest(url) : ""
-      Hardwarepedia::Util.cache_key(CACHE_NS, url_hash)
-    end
-
-    def _typed_cache_key_for(kind, url)
-      url_hash = url ? Digest::MD5.hexdigest(url) : ""
-      Hardwarepedia::Util.cache_key("#{CACHE_NS}-#{kind}", url_hash)
-    end
-
-    def _cache
-      Rails.cache
-    end
+  def self.find(type, url)
+    new(type, url).tap {|u| u.load! }
   end
 
-  validates_presence_of :url, :content_html, :content_md5
-
-  attribute_method_suffix '=', '?'
-  define_attribute_methods [:url, :kind, :content_html, :content_md5, :state]
-
-  def initialize(attrs={})
-    @attributes = {:state => 0}
-    @attributes.merge!(attrs)
+  def self.create(type, url, opts={})
+    new(type, url, opts).tap {|u| u.save }
   end
 
-  attr_reader :attributes
-
-  # XXX : Is this actually used?
-  attr_accessor :doc
-
-  def attribute(key)
-    @attributes[key.to_sym]
-  end
-  def attribute=(key, value)
-    @attributes[key.to_sym] = value
-  end
-  def attribute?(key)
-    @attributes[key.to_sym].present?
+  # Delete all urls, or urls of a certain type
+  def self.delete_all(opts={})
+    type = opts[:type] || '*'
+    db.keys(typed_key_for(type, '*'))
   end
 
-  def read_attribute_for_validation(key)
-    attribute(key)
+  def self.key_for(url)
+    url_hash = url ? _digest_url(url) : ""
+    Hardwarepedia::Util.cache_key(self, url_hash)
   end
 
-  def save
-    _cache.write _cache_key, self
+  def self.typed_key_for(type, url)
+    url_hash = url == '*' ? url : _digest_url(url)
+    Hardwarepedia::Util.cache_key(self, type, url_hash)
+  end
+
+  def self.cache
+    Rails.cache
+  end
+
+  def self._digest_url(url)
+    Digest::MD5.hexdigest(url)
+  end
+
+  attr_accessor :type, :url, :content_html, :content_digest, :state
+
+  # type - one of Category or Product
+  def initialize(type, url, opts={})
+    self.type = type
+    self.url = url
+    self.content_html = opts[:content_html]
+    self.content_digest = opts[:content_digest] || (
+      content_html && Digest::MD5.hexdigest(content_html)
+    )
+    self.state = opts[:state] || 0
   end
 
   def incomplete?
@@ -81,11 +54,46 @@ class Url
     state == 1
   end
 
-  def _cache_key
-    self.class._cache_key_for(url)
+  def load!
+    hash = db.hgetall(primary_key)
+    if hash.blank?
+      return false
+    else
+      self.type = hash['type']
+      self.content_html = hash['content_html']
+      self.content_digest = hash['content_digest']
+      self.state = Integer.from_store(hash['state'])
+      return true
+    end
   end
 
-  def _cache
-    self.class._cache
+  def save
+    raise "Cannot save Url: url is missing" unless url
+    raise "Cannot save Url: type is missing" unless type
+    raise "Cannot save Url: content_html is missing" unless content_html
+    raise "Cannot save Url: state is missing" unless state
+    hash = {
+     'type' => type,
+     'url' => url,
+     'content_html' => content_html,
+     'content_digest' => content_digest,
+     'state' => Integer.to_store(state)
+    }
+    db.pipelined do
+      db.hmset(primary_key, *hash.to_a)
+      db.hmset(secondary_key, *hash.to_a)
+    end
+  end
+
+  def primary_key
+    self.class.key_for(url)
+  end
+
+  def secondary_key
+    self.class.typed_key_for(type, url)
+  end
+
+  def db
+    self.class.db
   end
 end
