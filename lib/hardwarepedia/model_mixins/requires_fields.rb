@@ -2,35 +2,45 @@
 module Hardwarepedia
   module ModelMixins
     module RequiresFields
+
       extend ActiveSupport::Concern
 
       module ClassMethods
         def requires_fields(*fields)
           options = fields.extract_options!
           for field in fields
-            required_fields[field.to_sym] = options
-          end
-          unless @_init_requires_fields
-            before_save :check_required_fields
-            @_init_requires_fields = true
+            before_save_checks << [
+              "#{field} is required",
+              lambda { |model|
+                (!options[:if] || model.__send__(options[:if])) &&
+                (!options[:unless] || !model.__send__(options[:unless])) &&
+                model.__send__(field).blank?
+              }
+            ]
           end
         end
 
-        def required_fields
-          @_required_fields ||= {}
+        def fails_save_with(msg, &blk)
+          before_save_checks << [msg, blk]
+        end
+
+        def before_save_checks
+          @before_save_checks ||= []
         end
       end
 
-    private
-      def check_required_fields
-        missing_fields = []
-        self.class.required_fields.each do |field, options|
-          if (!options[:if] || __send__(options[:if])) && (!options[:unless] || !__send__(options[:unless]))
-            missing_fields << field if __send__(field).blank?
+      include Ohm::Callbacks
+
+      def before_save
+        super
+        error_messages = []
+        self.class.before_save_checks.each do |msg, check|
+          if check.call(self)
+            error_messages << msg
           end
         end
-        if missing_fields.any?
-          raise "The following fields are required: #{missing_fields.to_sentence}.\nRecord: #{inspect}"
+        if error_messages.any?
+          raise "Save failed! #{error_messages.join(", ")}.\nRecord: #{inspect}"
         end
       end
 

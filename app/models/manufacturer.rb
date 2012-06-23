@@ -1,8 +1,8 @@
 
-class Manufacturer < ActiveRecord::Base
-  has_many :reviewables
-  has_many :products
-  has_many :chipsets
+class Manufacturer < Ohm::Model
+  collection :reviewables
+  collection :products
+  collection :chipsets
 
   validates_presence_of :name
   validates_uniqueness_of :name

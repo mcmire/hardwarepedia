@@ -1,57 +1,22 @@
 
-class Category
-  def self.find_or_create(name)
-    new(name).tap {|c| c.load_or_save! }
-  end
+class Category < Ohm::Model
+  include Hardwarepedia::ModelMixins::RequiresFields
+  include Ohm::DataTypes
+  include Ohm::Timestamps
 
-  def self.key_for(name)
-    Hardwarepedia::Util.key(self, name)
-  end
+  attribute :name
+  attribute :webkey
+  attribute :state, Type::Integer
 
-  def self.db
-    Hardwarepedia.redis
-  end
+  unique :name
+  unique :webkey
 
-  attr_accessor :name, :webkey, :state
+  requires_fields :name, :webkey, :state
 
-  def initialize(name, opts={})
-    self.name = name
-    self.webkey = opts[:webkey] || name.parameterize
-    self.state = opts[:state] || 0
-  end
-
-  def load_or_save!
-    load! or save
-    return nil
-  end
-
-  def load!
-    data = db.hgetall(primary_key)
-    if hash.blank?
-      return false
-    else
-      self.webkey = hash['webkey']
-      self.state = Integer.from_store(hash['state'])
-      return true
-    end
-  end
-
-  def save
-    raise "Cannot save Url: webkey is missing" unless webkey
-    raise "Cannot save Url: state is missing" unless state
-    hash = {
-      'webkey' => webkey,
-      'state' => Integer.to_store(hash['state'])
-    }
-    db.hmset(primary_key, *hash.to_a)
-  end
-
-  def primary_key
-    self.class.key_for(name)
-  end
-
-  def db
-    self.class.db
+  def initialize(attrs={})
+    super(attrs)
+    self.webkey ||= name.parameterize
+    self.state ||= 0
   end
 end
 
