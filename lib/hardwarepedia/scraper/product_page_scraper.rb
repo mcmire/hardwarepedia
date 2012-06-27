@@ -44,20 +44,20 @@ module Hardwarepedia
           @product.chipset = @chipset =
             _find_or_create_chipset_product(chipset_model_name)
 
-          product.images = _scrape_images
-          product.prices = _scrape_prices
-          product.ratings = _scrape_ratings
+          _scrape_images
+          _scrape_prices
+          _scrape_ratings
 
-          logger.info "Saving product record for '#{product.full_name}'"
-          product.state = 1
+          logger.info "Saving product record for '#{@product.full_name}'"
+          @product.state = 1
 
           # Double check that the product doesn't already exist in the event that
           # it has already been processed in another thread
-          if existing_product = Product.where(:full_name => product.full_name, :state => 1).first
-            existing_product.update_attributes!(product.attributes)
-          else
-            product.save!
-          end
+          # if existing_product = Product.find(:full_name => product.full_name, :state => 1).first
+          #   existing_product.update_attributes!(product.attributes)
+          # else
+            @product.save!
+          # end
         end
       rescue Error => e
         logger.error e
@@ -77,32 +77,16 @@ module Hardwarepedia
       end
 
       def _find_or_create_product
-        if product = Product.where(:full_name => @full_name).first
-          logger.info "(Found product '#{@full_name}', updating)"
-          product.state = 0
-          product.save!
-        else
-          logger.info "Creating product '#{@full_name}'"
-          product = Product.create!(
-            :category => @category,
-            :name => @model_name,
-            :full_name => @full_name,
-            :state => 0
-          )
-        end
-        product
+        Product.with_or_create({:full_name => @full_name},
+          :category => @category,
+          :name => @model_name,
+          :full_name => @full_name,
+          :state => 0
+        )
       end
 
-      def _find_or_create_manufacturer(manufacturer_name, opts={})
-        type = "manufacturer"
-        type = "chipset #{type}" if opts[:chipset]
-        if manufacturer = Manufacturer.where(:name => manufacturer_name).first
-          logger.info "(Reading #{type} '#{manufacturer_name}' from cache)"
-        else
-          logger.info "Creating #{type} '#{manufacturer_name}'"
-          manufacturer = Manufacturer.create!(:name => manufacturer_name)
-        end
-        manufacturer
+      def _find_or_create_manufacturer(manufacturer_name)
+        Manufacturer.with_or_create(:name => manufacturer_name)
       end
 
       def _scrape_chipset_manufacturer_name
@@ -114,24 +98,17 @@ module Hardwarepedia
       end
 
       def _find_or_create_chipset_product(chipset_model_name)
-        chipset_full_name = "#{@chipset_manufacturer.name} #{chipset_model_name}"
-        if chipset = @chipset_manufacturer.products.where(:name => chipset_model_name).first
-          logger.info "(Found chipset product '#{chipset_full_name}')"
-        else
-          logger.info "Creating chipset product '#{chipset_full_name}'"
-          chipset = Chipset.create!(
-            :manufacturer => @chipset_manufacturer,
-            :category => @category,
-            :name => chipset_model_name,
-            :state => 0
-          )
+        Chipset.with_or_create({:full_name => chipset_full_name},
+          :manufacturer => @chipset_manufacturer,
+          :category => @category,
+          :name => chipset_model_name,
+          :state => 0
           # Eventually we will want to copy some of the attributes from this
           # implementation product...
-        end
+        )
       end
 
       def _scrape_images
-        images = []
         thumb_links = @doc.xpath('.//ul[contains(@class, "navThumbs")]//a')
         for thumb_link in thumb_links
           # this will give me back xml - i can read the fset element and get dx and dy to get the image dimensions
@@ -145,38 +122,35 @@ module Hardwarepedia
           # This image won't have an onmouseover, so we will want to ignore it.
           if thumb_link["onmouseover"]
             thumb_url = thumb_link["onmouseover"].
+              # TODO: Does this really have two d's?
               sub(/^Biz\.Product\.DetailPage\.swapProductImageWithLoadding\('/, "").
               sub(/',this\.href,''\);$/, "")
             caption = thumb_link["title"]
             # We have the url of the thumbnail but we need a url of the entire image
             url = thumb_url.sub(/\?.+$/, "") + "?scl=2.4"
-            unless @product.images.where(:url => url).exists?
-              images << Image.create!(
-                :product => @product,
-                :url => url,
-                :caption => caption
-              )
-            end
+            image = Image.with_or_create({:url => url},
+              :reviewable => @product,
+              :reviewable_url => @product_url,
+              :caption => caption
+            )
+            @product.images.add(image)
           end
-          images
         end
       end
 
       def _scrape_prices
-        prices = []
-        # Are you serious
+        # Are you serious...
         sku = @doc.at_xpath('.//div[@id="bcaBreadcrumbTop"]//dd[last()]').
           text.sub(/^Item[ ]*#:[ ]*/, "").to_ascii.strip
         javascript = fetch("http://content.newegg.com/LandingPage/ItemInfo4ProductDetail.aspx?Item=#{sku}")
         json = javascript.sub(/^\s*var Product={};\s*var rawItemInfo=/m, "").sub(/;\s*Product=rawItemInfo;\s*$/m, "")
         hash = JSON.parse(json)
-        amount = hash['finalPrice']
-        prices << Price.create!(
+        amount = (hash['finalPrice'].to_f * 100).to_i
+        price = Price.with_or_create({:reviewable_url => @product_url},
           :product => @product,
-          :url => product_url,
           :amount => amount
         )
-        prices
+        @product.prices.add(price)
       end
 
       def _scrape_ratings
@@ -185,15 +159,14 @@ module Hardwarepedia
         rating_node = @doc.at_xpath('.//div[contains(@class, "grpRating")]//a[contains(@class, "itmRating")]/span')
         # Some products will naturally not have any reviews yet, so there is no rating.
         if rating_node && rating_raw_value = rating_node.text.presence
-          num_reviews = rating_node.next.text.scan(/\d+/).first
-          ratings << Rating.create!(
+          num_reviews = rating_node.next.text.scan(/\d+/).first.to_i
+          rating = Rating.with_or_create({:reviewable_url => product_url},
             :product => @product,
-            :url => product_url,
             :raw_value => rating_raw_value,
             :num_reviews => num_reviews
           )
+          @product.ratings.add(rating)
         end
-        ratings
       end
     end
 

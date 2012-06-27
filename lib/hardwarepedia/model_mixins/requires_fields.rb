@@ -1,4 +1,6 @@
 
+require 'ohm/callbacks'
+
 module Hardwarepedia
   module ModelMixins
     module RequiresFields

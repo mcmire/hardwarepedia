@@ -1,22 +1,19 @@
 
 class Category < Ohm::Model
   include Hardwarepedia::ModelMixins::RequiresFields
-  include Ohm::DataTypes
-  include Ohm::Timestamps
+  include Ohm::Serialized
+
+  def self.with_chipsets
+    ["Graphics Cards"]
+  end
 
   attribute :name
-  attribute :webkey
-  attribute :state, Type::Integer
+  attribute :webkey, :default => lambda {|c| c.name.parameterize }
+  attribute :state, :default => 0
 
   unique :name
   unique :webkey
 
   requires_fields :name, :webkey, :state
-
-  def initialize(attrs={})
-    super(attrs)
-    self.webkey ||= name.parameterize
-    self.state ||= 0
-  end
 end
 

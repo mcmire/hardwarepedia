@@ -45,7 +45,7 @@ module Hardwarepedia
       page.preprocess!(node_set) if page.respond_to?(:preprocess!)
       content_html = node_set.to_html
       u2 = Url.new(content_html)
-      if u = Url.find(url)
+      if u = Url.with(:url => url)
         # logger.info "Url: #{url}"
         # require 'diffy'
         # diff = Diffy::Diff.new(u.content_html, content_html)
@@ -75,7 +75,9 @@ module Hardwarepedia
       else
         # We haven't scraped this URL yet, so add it to the database.
         logger.info "Haven't scraped <#{url}> yet, content md5 is #{content_digest}"
-        u = Url.create(type, url,
+        u = Url.create(
+          :type => type,
+          :url => url,
           :content_html => content_html,
           :content => content_digest
         )
@@ -88,7 +90,7 @@ module Hardwarepedia
     end
 
     def find_or_create_category(category_name)
-      Category.find_or_create(category_name)
+      Category.with_or_create(:name => category_name)
     end
 
     def scrape_products

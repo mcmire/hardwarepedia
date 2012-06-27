@@ -1,20 +1,19 @@
 
 class Manufacturer < Ohm::Model
+  include Hardwarepedia::ModelMixins::RequiresFields
+  include Ohm::Serialized
+
   collection :reviewables
   collection :products
   collection :chipsets
 
-  validates_presence_of :name
-  validates_uniqueness_of :name
+  attribute :name
+  attribute :webkey, :default => lambda {|m| m.name.parameterize }
 
-  before_save :_set_webkey
+  requires_fields :name, :webkey
 
   def to_param
     webkey
-  end
-
-  def _set_webkey
-    self.webkey = name.parameterize
   end
 end
 

@@ -1,8 +1,23 @@
 
-class Rating < ActiveRecord::Base
-  belongs_to :reviewable
+class Rating < Ohm::Model
+  include Ohm::Timestamps
+  include Hardwarepedia::ModelMixins::RequiresFields
+
+  reference :reviewable, :Reviewable
+  attribute :reviewable_url, :Url
+  attribute :raw_value
+  attribute :value, Float
+  attribute :num_reviews, Integer
+
+  unique :reviewable_url
+
+  requires_fields :reviewable_id, :reviewable_url, :raw_value, :value, :num_reviews
 
   before_save :_interpret_raw_value
+
+  def before_save
+    _interpret_raw_value
+  end
 
   def retailer_name
     @retailer_name ||= begin

@@ -1,13 +1,16 @@
 
 class Image < Ohm::Model
-  include Hardwarepedia::ModelMixins::RequiresFields
-  include Ohm::DataTypes
+  include Ohm::Serialized
   include Ohm::Timestamps
+  include Hardwarepedia::ModelMixins::RequiresFields
 
   reference :reviewable, :Reviewable
+  reference :reviewable_url, :Url
   attribute :url
   attribute :caption
 
-  requires_fields :reviewable_id, :url
+  unique :url
+
+  requires_fields :reviewable_id, :reviewable_url, :url
 end
 

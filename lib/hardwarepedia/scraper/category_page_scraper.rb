@@ -3,12 +3,22 @@ module Hardwarepedia
   class Scraper
 
     class CategoryPageScraper
-      def self.cache_key_namespace
-        'retailer_category_product_urls'
-      end
+      KEY_NS = 'retailer_category_product_urls'
+      EXPIRES_IN = 1.day
 
       def self.clear_cache
-        Rails.cache.delete_matched(/^#{cache_key_namespace}::/)
+        db.hkeys(key[:retailers]).each do |rname|
+          db.del(key[:retailers][rname]
+        end
+        db.del(key[:retailers])
+      end
+
+      def self.db
+        Ohm.redis
+      end
+
+      def self.key
+        @key ||= Nest.new(KEY_NS, db)
       end
 
       attr_reader :scraper, :page, :retailer, :category
@@ -26,16 +36,8 @@ module Hardwarepedia
         _scrape_product_urls(product_urls)
       end
 
-      def _cache_key
-        Hardwarepedia::Util.cache_key(
-          self.class.cache_key_namespace,
-          @retailer.name,
-          @category.name,
-        )
-      end
-
       def _get_category_product_urls
-        Rails.cache.fetch(_cache_key) {
+        cached {
           # Visit the first page to get the total number of pages, then use the
           # pagination links on that page to go through the rest of the pages
           # and get a list of product urls
@@ -67,9 +69,7 @@ module Hardwarepedia
           old_each_url = each_url
           each_url = proc do |page_url|
             threads << Thread.new do
-              ActiveRecord::Base.connection_pool.with_connection do
-                old_each_url.call(page_url)
-              end
+              old_each_url.call(page_url)
             end
           end
           old_each_urls = each_urls
@@ -109,9 +109,7 @@ module Hardwarepedia
           old_each_url = each_url
           each_url = proc do |url|
             threads << Thread.new do
-              ActiveRecord::Base.connection_pool.with_connection do
-                old_each_url.call(url)
-              end
+              old_each_url.call(url)
             end
           end
           old_each_urls = each_urls
@@ -128,6 +126,28 @@ module Hardwarepedia
         end
 
         each_urls.call(all_product_urls)
+      end
+
+      def cached(&block)
+        rname = @retailer.name
+        cname = @category.name
+        if json = db.hget(key[:retailers][rname], cname)
+          Yajl::Parser.parse(json)
+        else
+          all_product_urls = block.call
+          db.sadd(key[:retailers], rname)
+          db.hset(key[:retailers][rname], cname, Yajl::Encoder.encode(json))
+          db.expire(key[:retailer][rname], EXPIRES_IN)
+          all_product_urls
+        end
+      end
+
+      def key
+        self.class.key
+      end
+
+      def db
+        self.class.db
       end
     end
 

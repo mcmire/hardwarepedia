@@ -3,6 +3,7 @@ namespace :scrape do
   task :init => :environment do
     $stdout.sync = true   # disable buffering
 
+=begin
     if Rails.env.production?
       # Load all the eager load paths since Rails does not do this when running
       # Rake tasks, even in production mode
@@ -14,6 +15,7 @@ namespace :scrape do
       # "LoadError: Expected app/models/product.rb to define Product"
       Dir[ Rails.root.join("app/models/**/*.rb") ].each {|fn| require_dependency fn }
     end
+=end
   end
 
   def clear_all_the_things

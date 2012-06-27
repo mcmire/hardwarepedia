@@ -3,9 +3,9 @@ require 'digest/md5'
 
 class Url
   include Hardwarepedia::ModelMixins::RequiresFields
-  include Ohm::DataTypes
+  include Ohm::Serialized
   include Ohm::Timestamps
-  include Ohm::Expiration
+  include Ohm::Expiration  # our extension
 
   # Delete all urls, or urls of a certain type
   def self.delete_all(opts={})
@@ -20,8 +20,10 @@ class Url
   attribute :url
   attribute :content_html
   attribute :content_digest
-  attribute :state, Type::Integer
-  attribute :last_fetched_at, Type::Time
+  attribute :state, Integer
+  attribute :last_fetched_at, Time
+
+  unique :url
 
   expire_in 2.hours
 

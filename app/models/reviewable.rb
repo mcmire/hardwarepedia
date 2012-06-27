@@ -5,44 +5,37 @@ class Reviewable < Ohm::Model
   # field that holds info scraped from a URL
 
   include Hardwarepedia::ModelMixins::RequiresFields
-  include Ohm::DataTypes
+  include Ohm::Serialized
   include Ohm::Timestamps
 
   reference :manufacturer, :Manufacturer
   reference :category, :Category
-  reference :chipset, :Chipset
 
   attribute :type # one of Chipset or Product
   attribute :name
-  attribute :full_name
-  attribute :webkey
+  attribute :full_name, :default => lambda {|r| manufacturer && [manufacturer.name, name].join(" ") }
+  attribute :webkey, :default => lambda {|r| r.full_name.try(:parameterize) }
   attribute :summary
-  attribute :num_reviews, Type::Integer
-  attribute :specs, Type::Hash
+  attribute :num_reviews, Integer
+  attribute :specs, Hash
   set :content_urls
   set :official_urls
   set :mention_urls
-  attribute :market_release_date, Type::Date
-  attribute :state, Type::Integer
+  attribute :market_release_date, Date
+  attribute :state, Integer, :default => 0
 
-  collection :images
-  collection :prices
-  collection :ratings
-  collection :reviews
+  set :images, :Image
+  set :prices, :Price
+  set :ratings, :Rating
+  set :reviews, :Review
 
   requires_fields \
     :manufacturer_id, :category_id, :name, :first_price, :specs, :content_urls,
     :if => :complete?
   fails_save_with("Must have one price") {|r| r.prices.empty? }
 
-  def initialize(attrs={})
-    super(attrs)
-    self.full_name ||= (
-      manufacturer && [manufacturer.name, name].join(" ")
-    )
-    self.webkey ||= full_name.try(:parameterize)
-    self.state ||= 0
-  end
+  unique :full_name
+  unique :webkey
 
   def incomplete?
     state == 0
