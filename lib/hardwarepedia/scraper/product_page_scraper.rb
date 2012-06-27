@@ -77,7 +77,7 @@ module Hardwarepedia
       end
 
       def _find_or_create_product
-        Product.with_or_create({:full_name => @full_name},
+        Reviewable.first_or_create({:type => 'product', :full_name => @full_name, :state => 1},
           :category => @category,
           :name => @model_name,
           :full_name => @full_name,
@@ -86,7 +86,8 @@ module Hardwarepedia
       end
 
       def _find_or_create_manufacturer(manufacturer_name)
-        Manufacturer.with_or_create(:name => manufacturer_name)
+        Manufacturer.with_or_create({:name => manufacturer_name, :state => 1},
+          :state => 0)
       end
 
       def _scrape_chipset_manufacturer_name
@@ -98,7 +99,7 @@ module Hardwarepedia
       end
 
       def _find_or_create_chipset_product(chipset_model_name)
-        Chipset.with_or_create({:full_name => chipset_full_name},
+        Chipset.first_or_create({:type => 'chipset', :full_name => chipset_full_name, :state => 1},
           :manufacturer => @chipset_manufacturer,
           :category => @category,
           :name => chipset_model_name,
@@ -128,7 +129,7 @@ module Hardwarepedia
             caption = thumb_link["title"]
             # We have the url of the thumbnail but we need a url of the entire image
             url = thumb_url.sub(/\?.+$/, "") + "?scl=2.4"
-            image = Image.with_or_create({:url => url},
+            image = Image.with_or_create(:url, url,
               :reviewable => @product,
               :reviewable_url => @product_url,
               :caption => caption
@@ -146,7 +147,7 @@ module Hardwarepedia
         json = javascript.sub(/^\s*var Product={};\s*var rawItemInfo=/m, "").sub(/;\s*Product=rawItemInfo;\s*$/m, "")
         hash = JSON.parse(json)
         amount = (hash['finalPrice'].to_f * 100).to_i
-        price = Price.with_or_create({:reviewable_url => @product_url},
+        price = Price.with_or_create(:reviewable_url, @product_url,
           :product => @product,
           :amount => amount
         )
@@ -160,7 +161,7 @@ module Hardwarepedia
         # Some products will naturally not have any reviews yet, so there is no rating.
         if rating_node && rating_raw_value = rating_node.text.presence
           num_reviews = rating_node.next.text.scan(/\d+/).first.to_i
-          rating = Rating.with_or_create({:reviewable_url => product_url},
+          rating = Rating.with_or_create(:reviewable_url, product_url,
             :product => @product,
             :raw_value => rating_raw_value,
             :num_reviews => num_reviews

@@ -1,16 +1,16 @@
 
 class Price < Ohm::Model
-  include Ohm::Serialized
+  include Ohm::DataTypes
   include Ohm::Timestamps
   include Hardwarepedia::ModelMixins::RequiresFields
 
   reference :reviewable, :Reviewable
   reference :reviewable_url, :Url
-  attribute :amount, Integer
+  attribute :amount, Type::Integer
 
-  unique :reviewable_url
+  unique :reviewable_url_id
 
-  requires_fields :reviewable_id, :reviewable_url, :amount
+  requires_fields :reviewable_id, :reviewable_url_id, :amount
 
   def retailer_name
     @retailer_name ||= begin

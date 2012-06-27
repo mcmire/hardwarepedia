@@ -1,19 +1,19 @@
 
 class Rating < Ohm::Model
+  include Ohm::DataTypes
   include Ohm::Timestamps
   include Hardwarepedia::ModelMixins::RequiresFields
 
   reference :reviewable, :Reviewable
   attribute :reviewable_url, :Url
   attribute :raw_value
-  attribute :value, Float
-  attribute :num_reviews, Integer
+  attribute :value, Type::Float
+  attribute :num_reviews, Type::Integer
 
-  unique :reviewable_url
+  unique :reviewable_url_id
 
-  requires_fields :reviewable_id, :reviewable_url, :raw_value, :value, :num_reviews
-
-  before_save :_interpret_raw_value
+  requires_fields \
+    :reviewable_id, :reviewable_url_id, :raw_value, :value, :num_reviews
 
   def before_save
     _interpret_raw_value

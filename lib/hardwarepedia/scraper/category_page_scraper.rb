@@ -7,8 +7,8 @@ module Hardwarepedia
       EXPIRES_IN = 1.day
 
       def self.clear_cache
-        db.hkeys(key[:retailers]).each do |rname|
-          db.del(key[:retailers][rname]
+        db.smembers(key[:retailers]).each do |rname|
+          db.del(key[:retailers][rname])
         end
         db.del(key[:retailers])
       end
@@ -42,7 +42,7 @@ module Hardwarepedia
           # pagination links on that page to go through the rest of the pages
           # and get a list of product urls
           all_product_urls = []
-          @scraper.visiting(@page, @page.page_url(1), 'page') do |doc|
+          @scraper.visiting(@page, @page.page_url(1), 'category') do |doc|
             all_product_urls += @page.product_urls
             _collect_remaining_product_urls!(doc, all_product_urls)
           end
@@ -54,7 +54,7 @@ module Hardwarepedia
         use_threads = true #false
 
         each_url = proc do |page_url|
-          @scraper.visiting(@page, page_url, 'page') do |doc|
+          @scraper.visiting(@page, page_url, 'category') do |doc|
             all_product_urls += @page.product_urls
           end
         end
@@ -131,12 +131,12 @@ module Hardwarepedia
       def cached(&block)
         rname = @retailer.name
         cname = @category.name
-        if json = db.hget(key[:retailers][rname], cname)
-          Yajl::Parser.parse(json)
+        if all_product_urls = db.hget(key[:retailers][rname], cname)
+          JSON.parse(all_product_urls)
         else
           all_product_urls = block.call
           db.sadd(key[:retailers], rname)
-          db.hset(key[:retailers][rname], cname, Yajl::Encoder.encode(json))
+          db.hset(key[:retailers][rname], cname, JSON.generate(all_product_urls))
           db.expire(key[:retailer][rname], EXPIRES_IN)
           all_product_urls
         end

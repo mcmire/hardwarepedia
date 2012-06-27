@@ -20,10 +20,10 @@ namespace :scrape do
 
   def clear_all_the_things
     puts "Clearing out everything first..."
+    # Category.delete_all
     Manufacturer.delete_all
-    Category.delete_all
     Reviewable.delete_all
-    Url.delete_all
+    # Url.delete_all
     # Hardwarepedia::Scraper::CategoryPageScraper.clear_cache
   end
 

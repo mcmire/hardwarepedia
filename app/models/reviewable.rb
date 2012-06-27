@@ -4,25 +4,29 @@ class Reviewable < Ohm::Model
   # in the future if multiple URLs are involved maybe we could have a 'data'
   # field that holds info scraped from a URL
 
-  include Hardwarepedia::ModelMixins::RequiresFields
-  include Ohm::Serialized
+  include Ohm::DataTypes
   include Ohm::Timestamps
+  include Hardwarepedia::ModelMixins::RequiresFields
 
   reference :manufacturer, :Manufacturer
   reference :category, :Category
+  reference :chipset, :Chipset  # for products
 
-  attribute :type # one of Chipset or Product
+  collection :implementations, :Product  # for chipsets
+
+  attribute :type # one of chipset or product
   attribute :name
-  attribute :full_name, :default => lambda {|r| manufacturer && [manufacturer.name, name].join(" ") }
-  attribute :webkey, :default => lambda {|r| r.full_name.try(:parameterize) }
+  attribute :full_name
+  attribute :webkey
   attribute :summary
-  attribute :num_reviews, Integer
-  attribute :specs, Hash
-  set :content_urls
-  set :official_urls
-  set :mention_urls
-  attribute :market_release_date, Date
-  attribute :state, Integer, :default => 0
+  attribute :num_reviews, Type::Integer
+  attribute :specs, Type::Hash
+  attribute :content_urls, Type::Set
+  attribute :official_urls, Type::Set
+  attribute :mention_urls, Type::Set
+  attribute :released_to_market_on, Type::Date
+  attribute :state, Type::Integer
+  attribute :is_chipset, Type::Boolean
 
   set :images, :Image
   set :prices, :Price
@@ -32,10 +36,22 @@ class Reviewable < Ohm::Model
   requires_fields \
     :manufacturer_id, :category_id, :name, :first_price, :specs, :content_urls,
     :if => :complete?
+  requires_fields :chipset_id,
+    :if => [:complete?, :product, :_chipset_needed?]
   fails_save_with("Must have one price") {|r| r.prices.empty? }
 
-  unique :full_name
+  index :type
+  index :full_name
+  index :state
   unique :webkey
+
+  def initialize(attrs={})
+    super(attrs)
+    self.full_name ||= (manufacturer && [manufacturer.name, name].join(" "))
+    self.webkey ||= full_name.try(:parameterize)
+    self.state ||= 0
+    self.is_chipset ||= false
+  end
 
   def incomplete?
     state == 0
@@ -71,4 +87,9 @@ class Reviewable < Ohm::Model
     self.prices.sort {|a,b| b.created_at <=> a.created_at }.first
   end
 =end
+
+  # Only applicable for products
+  def _chipset_needed?
+    Category.with_chipsets.include?(category.name)
+  end
 end

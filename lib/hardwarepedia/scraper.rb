@@ -44,19 +44,32 @@ module Hardwarepedia
 
       page.preprocess!(node_set) if page.respond_to?(:preprocess!)
       content_html = node_set.to_html
-      u2 = Url.new(content_html)
-      if u = Url.with(:url => url)
+      u2 = Url.new(
+        :type => type,
+        :url => url,
+        :content_html => content_html
+      )
+      if u = Url.with(:url, url)
         # logger.info "Url: #{url}"
         # require 'diffy'
-        # diff = Diffy::Diff.new(u.content_html, content_html)
+        # diff = Diffy::Diff.new(u.content_html, u2.content_html)
         # puts diff.to_s(:color)
         # exit
 
         # We've scraped this URL before.
-        if true #type == 'product' && u2.content_digest == content_digest
+        if true #type == 'product' && u.content_digest == u2.content_digest
           # The content of this page hasn't changed since we last scraped it,
           # so no need to scrape it again
-          logger.info "(Already scraped <#{url}>, and it hasn't changed since last scrape)"
+          if type == 'category'
+            logger.info "Already scraped <#{url}>, but going to process anyway since it's a category page"
+            u.state = 0
+            u.save
+            yield doc
+            u.state = 1
+            u.save
+          else
+            logger.info "Already scraped <#{url}>, and it hasn't changed since last scrape, proceeding"
+          end
         else
           # The content of the page *has* changed since we last scraped it,
           # so just update the signature of the content
@@ -66,21 +79,17 @@ module Hardwarepedia
             logger.info "Scraping <#{url}> regardless of content since it's a collection page"
           end
           u.state = 0
-          u.content_digest = content_digest
+          u.content_digest = u2.content_digest
           u.save
           yield doc
           u.state = 1
           u.save
         end
       else
+        u = u2
         # We haven't scraped this URL yet, so add it to the database.
-        logger.info "Haven't scraped <#{url}> yet, content md5 is #{content_digest}"
-        u = Url.create(
-          :type => type,
-          :url => url,
-          :content_html => content_html,
-          :content => content_digest
-        )
+        logger.info "Haven't scraped <#{url}> yet, content md5 is #{u.content_digest}"
+        u.save
         yield doc
         u.state = 1
         u.save
@@ -90,7 +99,7 @@ module Hardwarepedia
     end
 
     def find_or_create_category(category_name)
-      Category.with_or_create(:name => category_name)
+      Category.first_or_create(:name => category_name, :state => 1)
     end
 
     def scrape_products

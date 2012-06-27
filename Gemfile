@@ -10,11 +10,9 @@ gem 'tzinfo'  # activesupport should be requiring this but it doesn't :(
 gem 'activesupport', '3.2.3'
 gem 'actionpack', '3.2.3'
 
-gem 'redis', '3.0.0'
-# gem 'ohm', '0.1.5'
-gem 'ohm-contrib', '1.0.1', :require => false
-# CAN'T USE THIS... IT'S A FORK OF 0.1 AND OHM IS UP TO 1.0 NOW :(
-gem 'ohm', :git => 'http://github.com/tribalvibes/ohm'
+gem 'redis'#, '3.0.0'
+gem 'ohm', '1.0.2'
+gem 'ohm-contrib', '1.0.1', :require => 'ohm/contrib'
 
 #---
 

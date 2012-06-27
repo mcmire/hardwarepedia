@@ -1,6 +1,6 @@
 
 class Image < Ohm::Model
-  include Ohm::Serialized
+  include Ohm::DataTypes
   include Ohm::Timestamps
   include Hardwarepedia::ModelMixins::RequiresFields
 
@@ -11,6 +11,6 @@ class Image < Ohm::Model
 
   unique :url
 
-  requires_fields :reviewable_id, :reviewable_url, :url
+  requires_fields :reviewable_id, :reviewable_url_id, :url
 end
 

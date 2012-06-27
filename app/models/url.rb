@@ -1,10 +1,10 @@
 
 require 'digest/md5'
 
-class Url
-  include Hardwarepedia::ModelMixins::RequiresFields
-  include Ohm::Serialized
+class Url < Ohm::Model
+  include Ohm::DataTypes
   include Ohm::Timestamps
+  include Hardwarepedia::ModelMixins::RequiresFields
   include Ohm::Expiration  # our extension
 
   # Delete all urls, or urls of a certain type
@@ -20,19 +20,20 @@ class Url
   attribute :url
   attribute :content_html
   attribute :content_digest
-  attribute :state, Integer
-  attribute :last_fetched_at, Time
+  attribute :state, Type::Integer
+  attribute :last_fetched_at, Type::Time
 
+  index :type
+  index :state
   unique :url
 
   expire_in 2.hours
 
   requires_fields :type, :url, :content_html, :content_digest, :state
 
-  # type - one of Category or Product
   def initialize(attrs={})
     super(attrs)
-    self.content_digest ||= (content_html && Digest::MD5.hexdigest(url))
+    self.content_digest ||= (content_html && Digest::MD5.hexdigest(content_html))
     self.state ||= 0
   end
 
