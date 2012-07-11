@@ -1,19 +1,17 @@
 
 require 'digest/md5'
 
-class Url < Ohm::Model
-  include Ohm::DataTypes
+class Url < Base
   include Ohm::Timestamps
-  include Hardwarepedia::ModelMixins::RequiresFields
-  include Ohm::Expiration  # our extension
 
   # Delete all urls, or urls of a certain type
   def self.delete_all(opts={})
     if opts[:type]
-      find(:type => opts[:type]).each {|url| url.delete }
+      find(:type => opts[:type]).to_a.each {|url| url.delete }
     else
-      all.each {|url| url.delete }
+      all.to_a.each {|url| url.delete }
     end
+    nil
   end
 
   attribute :type  # one of "category" or "product"

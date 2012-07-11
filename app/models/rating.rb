@@ -1,19 +1,22 @@
 
-class Rating < Ohm::Model
-  include Ohm::DataTypes
-  include Ohm::Timestamps
-  include Hardwarepedia::ModelMixins::RequiresFields
+require_dependency 'retailer'
+require_dependency 'reviewable'
+
+class Rating < Base
+  # TODO: When we add merchants then we need a link to merchant-product
+  # and we can get possibly get rid of reviewable_url
 
   reference :reviewable, :Reviewable
-  attribute :reviewable_url, :Url
+  attribute :reviewable_url
   attribute :raw_value
   attribute :value, Type::Float
   attribute :num_reviews, Type::Integer
+  include Ohm::Timestamps
 
-  unique :reviewable_url_id
+  unique :reviewable_url
 
   requires_fields \
-    :reviewable_id, :reviewable_url_id, :raw_value, :value, :num_reviews
+    :reviewable_id, :reviewable_url, :raw_value, :value, :num_reviews
 
   def before_save
     _interpret_raw_value

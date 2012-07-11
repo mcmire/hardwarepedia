@@ -2,6 +2,12 @@
 require 'net/http'
 require 'enumerator'
 
+require_dependency 'hardwarepedia/scraper/configuration'
+require_dependency 'hardwarepedia/scraper/category_page_scraper'
+
+require_dependency 'url'
+require_dependency 'category'
+
 module Hardwarepedia
 
   class Scraper
@@ -23,11 +29,10 @@ module Hardwarepedia
     end
 
     def logger
+      # Q: Will this also write to the root logger file?
       @logger ||= Logging.logger[self].tap do |logger|
         file_appender = Logging.appenders.file(LOG_FILENAME)
-        stdout_appender = Logging.appenders.stdout
-        logger.add_appenders(file_appender, stdout_appender)
-        logger.level = :info
+        logger.add_appenders(file_appender)
       end
     end
 
@@ -50,7 +55,7 @@ module Hardwarepedia
         :content_html => content_html
       )
       if u = Url.with(:url, url)
-        # logger.info "Url: #{url}"
+        # logger.debug "Url: #{url}"
         # require 'diffy'
         # diff = Diffy::Diff.new(u.content_html, u2.content_html)
         # puts diff.to_s(:color)
@@ -61,22 +66,22 @@ module Hardwarepedia
           # The content of this page hasn't changed since we last scraped it,
           # so no need to scrape it again
           if type == 'category'
-            logger.info "Already scraped <#{url}>, but going to process anyway since it's a category page"
+            logger.debug "Already scraped <#{url}>, but going to process anyway since it's a category page"
             u.state = 0
             u.save
             yield doc
             u.state = 1
             u.save
           else
-            logger.info "Already scraped <#{url}>, and it hasn't changed since last scrape, proceeding"
+            logger.debug "Already scraped <#{url}>, and it hasn't changed since last scrape, proceeding"
           end
         else
           # The content of the page *has* changed since we last scraped it,
           # so just update the signature of the content
           if type == 'product'
-            logger.info "Already scraped <#{url}>, but it's changed since last scrape, so updating md5"
+            logger.debug "Already scraped <#{url}>, but it's changed since last scrape, so updating md5"
           else
-            logger.info "Scraping <#{url}> regardless of content since it's a collection page"
+            logger.debug "Scraping <#{url}> regardless of content since it's a collection page"
           end
           u.state = 0
           u.content_digest = u2.content_digest
@@ -88,7 +93,7 @@ module Hardwarepedia
       else
         u = u2
         # We haven't scraped this URL yet, so add it to the database.
-        logger.info "Haven't scraped <#{url}> yet, content md5 is #{u.content_digest}"
+        logger.debug "Haven't scraped <#{url}> yet, content md5 is #{u.content_digest}"
         u.save
         yield doc
         u.state = 1
@@ -102,13 +107,21 @@ module Hardwarepedia
       Category.first_or_create(:name => category_name, :state => 1)
     end
 
+    def scrape_product(retailer_name, category_name, product_url)
+      retailer = config.find_retailer(retailer_name)
+      category = find_or_create_category(category_name)
+      product_page_scraper = Hardwarepedia::Scraper::ProductPageScraper.new(
+        self, category, retailer.product_page, product_url
+      )
+      product_page_scraper.call
+    end
+
     def scrape_products
       config.each_category_page do |category_page|
         CategoryPageScraper.new(self, category_page).call
       end
     end
 
-  private
     def fetch(url)
       uri = URI.parse(url)
       i = 1
@@ -116,7 +129,7 @@ module Hardwarepedia
       content = nil
       begin
         full_path = uri.path + (uri.query ? "?#{uri.query}" : "")
-        logger.info "Fetching #{url}..." if i == 0
+        logger.debug "Fetching #{url}..." if i == 0
         resp = Net::HTTP.start(uri.host, uri.port) do |http|
           http.read_timeout = 30
           http.get(full_path)

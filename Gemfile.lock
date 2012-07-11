@@ -1,3 +1,11 @@
+PATH
+  remote: ~/code/github/forks/ohm
+  specs:
+    ohm (1.0.2)
+      nest (~> 1.0)
+      redis (~> 2.2)
+      scrivener (~> 0.0.3)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -74,10 +82,6 @@ GEM
       redis
     netrc (0.7.1)
     nokogiri (1.5.2)
-    ohm (1.0.2)
-      nest (~> 1.0)
-      redis (~> 2.2)
-      scrivener (~> 0.0.3)
     ohm-contrib (1.0.1)
       ohm (~> 1.0)
     pry (0.9.9.6)
@@ -155,7 +159,7 @@ DEPENDENCIES
   map (= 5.7.0)
   mustache (= 0.99.4)
   nokogiri (= 1.5.2)
-  ohm (= 1.0.2)
+  ohm!
   ohm-contrib (= 1.0.1)
   pry
   redis

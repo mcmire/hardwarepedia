@@ -1,12 +1,10 @@
 
-class Reviewable < Ohm::Model
+class Reviewable < Base
   # For right now we are just assuming that we are hitting one URL...
   # in the future if multiple URLs are involved maybe we could have a 'data'
   # field that holds info scraped from a URL
 
-  include Ohm::DataTypes
   include Ohm::Timestamps
-  include Hardwarepedia::ModelMixins::RequiresFields
 
   reference :manufacturer, :Manufacturer
   reference :category, :Category
@@ -26,7 +24,6 @@ class Reviewable < Ohm::Model
   attribute :mention_urls, Type::Set
   attribute :released_to_market_on, Type::Date
   attribute :state, Type::Integer
-  attribute :is_chipset, Type::Boolean
 
   set :images, :Image
   set :prices, :Price
@@ -34,21 +31,26 @@ class Reviewable < Ohm::Model
   set :reviews, :Review
 
   requires_fields \
-    :manufacturer_id, :category_id, :name, :first_price, :specs, :content_urls,
+    :manufacturer_id, :category_id, :name, :specs, :content_urls,
     :if => :complete?
   requires_fields :chipset_id,
-    :if => [:complete?, :product, :_chipset_needed?]
-  fails_save_with("Must have one price") {|r| r.prices.empty? }
+    :if => [:complete?, :product?, :_chipset_needed?]
+  fails_save_with("Must have one price") {|r| r.complete? && r.prices.empty? }
 
   index :type
   index :full_name
   index :state
   unique :webkey
 
+  attr_accessor :is_chipset
+
   def initialize(attrs={})
     super(attrs)
     self.full_name ||= (manufacturer && [manufacturer.name, name].join(" "))
     self.webkey ||= full_name.try(:parameterize)
+    self.content_urls ||= Set.new
+    self.official_urls ||= Set.new
+    self.mention_urls ||= Set.new
     self.state ||= 0
     self.is_chipset ||= false
   end
@@ -62,6 +64,13 @@ class Reviewable < Ohm::Model
 
   def to_param
     webkey
+  end
+
+  def product?
+    type == 'product'
+  end
+  def chipset?
+    type == 'chipset'
   end
 
 =begin

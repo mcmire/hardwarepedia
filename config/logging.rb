@@ -4,8 +4,10 @@ Logging::Rails.configure do |config|
   # Objects will be converted to strings using the :format_as method.
   Logging.format_as :inspect
 
-  # The default layout used by the appenders.
-  layout = Logging.layouts.pattern(:pattern => '[%d] %-5l %c : %m\n')
+  # The default pattern used by the appenders.
+  pattern = '[%d] %-5l %50c [%3T] :: %m\n'
+
+  Thread.current[:name] = 'T0'
 
   # Setup a color scheme called 'bright' than can be used to add color codes
   # to the pattern layout. Color schemes should only be used with appenders
@@ -14,14 +16,15 @@ Logging::Rails.configure do |config|
   #
   Logging.color_scheme( 'bright',
     :levels => {
+      :debug => :green,
       :info  => :green,
       :warn  => :yellow,
       :error => :red,
       :fatal => [:white, :on_red]
     },
-    :date => :blue,
+    :date => [:blue, :bold],
     :logger => :cyan,
-    :message => :magenta
+    :message => :white
   )
 
   # Configure an appender that will write log events to STDOUT. A colorized
@@ -31,7 +34,7 @@ Logging::Rails.configure do |config|
   Logging.appenders.stdout( 'stdout',
     :auto_flushing => true,
     :layout => Logging.layouts.pattern(
-      :pattern => '[%d] %-5l %c : %m\n',
+      :pattern => pattern,
       :color_scheme => 'bright'
     )
   ) if config.log_to.include? 'stdout'
@@ -47,7 +50,7 @@ Logging::Rails.configure do |config|
     :age => 'daily',
     :truncate => false,
     :auto_flushing => true,
-    :layout => layout
+    :layout => Logging.layouts.pattern(:pattern => pattern)
   ) if config.log_to.include? 'file'
 
   # Configure an appender that will send an email for "error" and "fatal" log

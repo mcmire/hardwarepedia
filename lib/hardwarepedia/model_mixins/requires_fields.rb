@@ -10,12 +10,12 @@ module Hardwarepedia
       module ClassMethods
         def requires_fields(*fields)
           options = fields.extract_options!
-          for field in fields
+          fields.each do |field|
             before_save_checks << [
               "#{field} is required",
               lambda { |model|
-                (!options[:if] || model.__send__(options[:if])) &&
-                (!options[:unless] || !model.__send__(options[:unless])) &&
+                (!options.key?(:if) || _evaluate_condition(model, options[:if])) &&
+                (!options.key?(:unless) || !_evaluate_condition(model, options[:unless])) &&
                 model.__send__(field).blank?
               }
             ]
@@ -29,12 +29,21 @@ module Hardwarepedia
         def before_save_checks
           @before_save_checks ||= []
         end
+
+        def _evaluate_condition(model, cond)
+          if Array === cond
+            ret = true
+            cond.each {|c| ret &&= model.__send__(c) }
+            ret
+          else
+            model.__send__(cond)
+          end
+        end
       end
 
       include Ohm::Callbacks
 
       def before_save
-        super
         error_messages = []
         self.class.before_save_checks.each do |msg, check|
           if check.call(self)

@@ -1,4 +1,6 @@
 
+require_dependency 'hardwarepedia/scraper/product_page_scraper'
+
 module Hardwarepedia
   class Scraper
 
@@ -29,6 +31,8 @@ module Hardwarepedia
 
         @retailer = @page.retailer
         @category = @scraper.find_or_create_category(@page.category_name)
+
+        @thread_count = 0
       end
 
       def call
@@ -51,7 +55,7 @@ module Hardwarepedia
       end
 
       def _collect_remaining_product_urls!(doc, all_product_urls)
-        use_threads = true #false
+        use_threads = true
 
         each_url = proc do |page_url|
           @scraper.visiting(@page, page_url, 'category') do |doc|
@@ -69,7 +73,15 @@ module Hardwarepedia
           old_each_url = each_url
           each_url = proc do |page_url|
             threads << Thread.new do
-              old_each_url.call(page_url)
+              @thread_count += 1
+              Thread.current[:name] = "T#{@thread_count}"
+              begin
+                old_each_url.call(page_url)
+              rescue Exception => e
+                logger.error "#{e.class}: #{e.message}"
+                (threads - [Thread.current]).each {|t| t.kill }
+                raise e
+              end
             end
           end
           old_each_urls = each_urls
@@ -80,7 +92,7 @@ module Hardwarepedia
               t = Time.now
               threads.each {|t| t.join }
               elapsed_time = Time.now - t
-              logger.info("Finished #{NUM_THREADS} threads in %f seconds (%.1f t/s)" % [elapsed_time, (NUM_THREADS.to_f / elapsed_time)])
+              logger.debug("Finished #{NUM_THREADS} threads in %f seconds (%.1f t/s)" % [elapsed_time, (NUM_THREADS.to_f / elapsed_time)])
             end
           end
         end
@@ -109,7 +121,15 @@ module Hardwarepedia
           old_each_url = each_url
           each_url = proc do |url|
             threads << Thread.new do
-              old_each_url.call(url)
+              @thread_count += 1
+              Thread.current[:name] = "T#{@thread_count}"
+              begin
+                old_each_url.call(url)
+              rescue Exception => e
+                logger.error "#{e.class}: #{e.message}"
+                (threads - [Thread.current]).each {|t| t.kill }
+                raise e
+              end
             end
           end
           old_each_urls = each_urls
@@ -120,7 +140,7 @@ module Hardwarepedia
               t = Time.now
               threads.each {|t| t.join }
               elapsed_time = Time.now - t
-              logger.info("Finished #{NUM_THREADS} threads in %f seconds (%.1f t/s)" % [elapsed_time, (NUM_THREADS.to_f / elapsed_time)])
+              logger.debug("Finished #{NUM_THREADS} threads in %f seconds (%.1f t/s)" % [elapsed_time, (NUM_THREADS.to_f / elapsed_time)])
             end
           end
         end

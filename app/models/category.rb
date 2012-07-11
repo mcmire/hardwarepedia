@@ -1,8 +1,5 @@
 
-class Category < Ohm::Model
-  include Ohm::DataTypes
-  include Hardwarepedia::ModelMixins::RequiresFields
-
+class Category < Base
   def self.with_chipsets
     ["Graphics Cards"]
   end

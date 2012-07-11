@@ -35,12 +35,13 @@ Hardwarepedia::Application.configure do
   # Expands the lines which load the assets
   config.assets.debug = true
 
-  # Set the logging destination(s)
-  if $RUNNING_RAKE_TASK
-    config.log_to = %w[file]
-  else
+  # Logging config
+  config.log_level = :debug
+  # if $RUNNING_RAKE_TASK
+  #   config.log_to = %w[file]
+  # else
     config.log_to = %w[stdout file]
-  end
+  # end
 
   # Show the logging configuration on STDOUT
   config.show_log_configuration = true
