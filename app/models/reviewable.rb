@@ -21,6 +21,26 @@ class Reviewable < Sequel::Model
   serialize_attributes :set, \
     :content_urls, :official_urls, :mention_urls
 
+  def self.sorted(manufacturer, sort_key, sort_order)
+    reviewables = manufacturer.reviewables
+    # Schwartzian transform
+    sort_rule = _sort_rules[sort_key] or raise "Unknown sort key '#{sort_key}'"
+    tmp = eval %< reviewables.map { |p| [p, #{sort_rule}] } >
+    case sort_order
+      when "desc" then tmp.sort! {|a,b| b[1] <=> a[1] }
+      else             tmp.sort! {|a,b| a[1] <=> b[1] }
+    end
+    tmp.map {|x| x[0] }
+  end
+
+  def self._sort_rules
+    return {
+      "full_name" => "p.full_name.downcase",
+      "price" => "(p.current_price.try(:amount) || -1)",
+      "rating_index" => "[(p.current_rating.try(:value) || 0), p.current_num_reviews]"
+    }
+  end
+
   attr_accessor :is_chipset
 
   def initialize(attrs={})

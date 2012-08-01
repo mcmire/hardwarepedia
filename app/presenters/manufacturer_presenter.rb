@@ -21,7 +21,8 @@ class ManufacturerPresenter < Presenter
   end
 
   def reviewables
-    ReviewablePresenter.wrap(view, manufacturer.reviewables)
+    reviewables = Reviewable.sorted(manufacturer, view.sort_key, view.sort_order)
+    ReviewablePresenter.wrap(view, reviewables)
   end
 
   def _sorted_link_to(link_text, sort_key, params={})
