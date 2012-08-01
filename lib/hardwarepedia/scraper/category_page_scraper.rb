@@ -47,7 +47,7 @@ module Hardwarepedia
           # and get a list of product urls
           all_product_urls = []
           @scraper.visiting(@page, @page.page_url(1), 'category') do |doc|
-            all_product_urls += @page.product_urls
+            all_product_urls.concat(@page.product_urls)
             _collect_remaining_product_urls!(doc, all_product_urls)
           end
           all_product_urls.sort.uniq
@@ -59,7 +59,7 @@ module Hardwarepedia
 
         each_url = proc do |page_url|
           @scraper.visiting(@page, page_url, 'category') do |doc|
-            all_product_urls += @page.product_urls
+            all_product_urls.concat(@page.product_urls)
           end
         end
         each_urls = proc do |page_urls|

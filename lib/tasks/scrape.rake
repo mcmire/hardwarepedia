@@ -19,6 +19,7 @@ namespace :scrape do
   end
 
   def clear_all_the_things
+    start_over = true
     puts "Clearing out everything first..."
     Image.delete_all
     Price.delete_all
@@ -26,8 +27,12 @@ namespace :scrape do
     Reviewable.delete_all
     Category.delete_all
     Manufacturer.delete_all
-    Url.delete_all(:type => 'product')
-    # Hardwarepedia::Scraper::CategoryPageScraper.clear_cache
+    if start_over
+      Url.delete_all
+      Hardwarepedia::Scraper::CategoryPageScraper.clear_cache
+    else
+      Url.delete_all(:type => 'product')
+    end
   end
 
   task :products => :init do
@@ -40,7 +45,7 @@ namespace :scrape do
     category_name = "Graphics Cards"
     product_url = ENV["URL"] or raise "Must pass URL=..."
 
-    clear_all_the_things
+    # clear_all_the_things
 
     scraper = Hardwarepedia::Scraper.new
     scraper.scrape_product(retailer_name, category_name, product_url)

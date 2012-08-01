@@ -25,13 +25,14 @@ class ReviewablePresenter < Presenter
   end
 
   def formatted_rating
-    if current_rating
-      "%s (%s)" % [
-        current_rating.raw_value,
-        view.pluralize(current_rating.num_reviews, 'review')
-      ]
-    else
-      "N/A"
-    end
+    current_rating.try(:raw_value) || 'N/A'
+  end
+
+  def formatted_num_reviews
+    view.pluralize(current_num_reviews, 'review')
+  end
+
+  def formatted_rating_with_num_reviews
+    "%s (%s)" % [formatted_rating, formatted_num_reviews]
   end
 end

@@ -89,9 +89,14 @@ class Reviewable < Sequel::Model
 =end
 
   def current_rating
-    self.ratings.sort {|a,b| b.created_at <=> a.created_at }.first
+    @current_rating ||= self.ratings.sort {|a,b| b.created_at <=> a.created_at }.first
   end
+
+  def current_num_reviews
+    current_rating.try(:num_reviews) || 0
+  end
+
   def current_price
-    self.prices.sort {|a,b| b.created_at <=> a.created_at }.first
+    @current_price ||= self.prices.sort {|a,b| b.created_at <=> a.created_at }.first
   end
 end

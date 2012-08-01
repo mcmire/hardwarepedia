@@ -26,6 +26,7 @@ module Hardwarepedia
 
           pairs = doc.xpath('.//div[@id="Specs"]//dl/*').map {|node| node.text.sub(/:$/, "").strip }
           @specs = Hash[*pairs]
+          @orig_specs = @specs.dup
 
           @manufacturer_name = _scrape_manufacturer_name
           @model_name = _scrape_model_name
@@ -36,6 +37,9 @@ module Hardwarepedia
             # thread. let's let it do its thing.
             return
           end
+          # otherwise, go ahead and save it so if another thread comes along and
+          # looks for this product it will find it
+          @product.save
 
           @product.content_urls << product_url
           @product.specs = @specs
@@ -66,7 +70,7 @@ module Hardwarepedia
       def _scrape_model_name
         model_name = @specs.delete("Model").to_s.strip
         unless model_name
-          raise "Couldn't find model name!\nSpecs are: #{@specs.pretty_inspect}"
+          raise "Couldn't find model name!\nSpecs are: #{@orig_specs.pretty_inspect}"
         end
         model_name
       end
@@ -113,7 +117,7 @@ module Hardwarepedia
       def _scrape_chipset_manufacturer_name
         chipset_manufacturer_name = @specs.delete("Chipset Manufacturer").to_s.strip
         if chipset_manufacturer_name.blank?
-          raise "No chipset manufacturer name found!\nSpecs are: #{@specs.pretty_inspect}"
+          raise "No chipset manufacturer name found!\nSpecs are: #{@orig_specs.pretty_inspect}"
         end
         chipset_manufacturer_name
       end
@@ -121,7 +125,7 @@ module Hardwarepedia
       def _scrape_chipset_model_name
         chipset_model_name = @specs.delete("GPU").to_s.strip
         if chipset_model_name.blank?
-          raise "No chipset model name found!\nSpecs are: #{@specs.pretty_inspect}"
+          raise "No chipset model name found!\nSpecs are: #{@orig_specs.pretty_inspect}"
         end
         chipset_model_name.sub!(%r{\s*\(.+?\)$}, "")
         chipset_model_name
@@ -200,11 +204,12 @@ module Hardwarepedia
 
       def _scrape_ratings
         ratings = []
-        # XXX: Should this be itemRating??
-        rating_node = @doc.at_xpath('.//div[contains(@class, "grpRating")]//a[contains(@class, "itmRating")]/span')
-        # Some products will naturally not have any reviews yet, so there is no rating.
-        if rating_node && rating_raw_value = rating_node.text.strip.presence
-          num_reviews = rating_node.next.text.scan(/\d+/).first.to_i
+        # If the product has no ratings yet then this node will not be available
+        if rating_box_node = @doc.at_xpath('.//div[contains(@class, "grpRating")]//a[contains(@class, "itmRating")]')
+          rating_node = rating_box_node.at_xpath('./span[@itemprop="ratingValue"]')
+          rating_raw_value = "#{rating_node['content']}/5"
+          num_reviews_node = rating_box_node.at_xpath('./span[@itemprop="reviewCount"]')
+          num_reviews = num_reviews_node.text.to_i
           rating = Rating.first_or_create_by(
             {:reviewable_url => product_url},
             {:reviewable_id => @product.id,
