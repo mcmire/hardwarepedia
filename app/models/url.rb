@@ -23,9 +23,12 @@ class Url < Sequel::Model
     self.state ||= 0
   end
 
+  def content_digest
+    self['content_digest'] ||= (content_html && Digest::MD5.hexdigest(content_html))
+  end
+
   def before_create
     super
-    self.content_digest ||= (content_html && Digest::MD5.hexdigest(content_html))
     self.expires_at = 2.hours.from_now
   end
 

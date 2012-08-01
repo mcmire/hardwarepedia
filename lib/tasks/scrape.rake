@@ -26,8 +26,8 @@ namespace :scrape do
     Reviewable.delete_all
     Category.delete_all
     Manufacturer.delete_all
-    Url.delete_all#(:type => 'product')
-    Hardwarepedia::Scraper::CategoryPageScraper.clear_cache
+    Url.delete_all(:type => 'product')
+    # Hardwarepedia::Scraper::CategoryPageScraper.clear_cache
   end
 
   task :products => :init do

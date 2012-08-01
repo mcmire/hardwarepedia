@@ -32,11 +32,11 @@ module Hardwarepedia
         # if two threads lock at the exact same time, well, that's silly
         synchronize do
           begin
-            logger.debug "Lock reserve: #{key.inspect}"
+            # logger.debug "Lock reserve: #{key.inspect}"
             locks[key] = Thread.current
             yield
           ensure
-            logger.debug "Lock release: #{key.inspect}"
+            # logger.debug "Lock release: #{key.inspect}"
             locks.delete(key)
             notify(key)
           end
@@ -44,7 +44,7 @@ module Hardwarepedia
       end
 
       def wait_for(key)
-        logger.debug "Lock wait: #{key.inspect}"
+        # logger.debug "Lock wait: #{key.inspect}"
         queue = queues[key] ||= []
         cond = new_cond
         queue << cond
