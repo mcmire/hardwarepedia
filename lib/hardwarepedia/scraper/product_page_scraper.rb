@@ -21,45 +21,38 @@ module Hardwarepedia
       end
 
       def call
-        @scraper.visiting(product_page, product_url, 'product') do |doc|
+        @scraper.visiting(@product_page, @product_url, 'product') do |doc|
           @doc = doc
 
           pairs = doc.xpath('.//div[@id="Specs"]//dl/*').map {|node| node.text.sub(/:$/, "").strip }
           @specs = Hash[*pairs]
 
           @manufacturer_name = _scrape_manufacturer_name
-
-          # Save the product as soon as possible so that if other threads are
-          # processing this same product for some reason, they can see that the
-          # product already exists
           @model_name = _scrape_model_name
           @full_name = [@manufacturer_name, @model_name].join(" ")
-          @product = _find_or_create_product
+          @product = _find_or_build_product
+          if @product.nil?
+            # nil means the product is currently being processed by another
+            # thread. let's let it do its thing.
+            return
+          end
 
           @product.content_urls << product_url
           @product.specs = @specs
 
-          @product.manufacturer = @manufacturer =
-            _find_or_create_manufacturer(@manufacturer_name)
+          @manufacturer = _find_or_create_manufacturer(@manufacturer_name)
+          @product.manufacturer_id = @manufacturer.id
 
           @chipset_manufacturer_name = _scrape_chipset_manufacturer_name
           @chipset_model_name = _scrape_chipset_model_name
-          @chipset_manufacturer = _find_or_create_manufacturer(@chipset_manufacturer_name)
-          @product.chipset = @chipset = _find_or_create_chipset_product
+          @chipset_manufacturer =
+            _find_or_create_manufacturer(@chipset_manufacturer_name)
+          @chipset = _find_or_create_chipset_product
+          @product.chipset_id = @chipset.id
 
-          # Double check that the product doesn't already exist in the event that
-          # it has already been processed in another thread
-          logger.debug "Saving product record for #{@product.full_name.inspect}"
-          existing_product = Reviewable.find(
-            :type => 'product',
-            :full_name => @product.full_name
-          ).first
-          if existing_product
-            existing_product.update_attributes(@product.attributes)
-            @product = existing_product
-          else
-            @product.save
-          end
+          # product has to be saved before we can add associations
+          @product.state = 0
+          @product.save
 
           _scrape_images
           _scrape_prices
@@ -68,8 +61,6 @@ module Hardwarepedia
           @product.state = 1
           @product.save
         end
-      # rescue Error => e
-      #   logger.error e
       end
 
       def _scrape_model_name
@@ -94,21 +85,29 @@ module Hardwarepedia
         manufacturer_name
       end
 
-      def _find_or_create_product
-        logger.debug "Finding or creating product #{@full_name.inspect}"
-        Reviewable.first_or_create(
-          {:type => 'product',
-           :full_name => @full_name,
-           :state => 1},
-          {:category => @category,
-           :name => @model_name,
-           :full_name => @full_name,
-           :state => 0}
-        )
+      def _find_or_build_product
+        logger.debug "Finding or building product #{@full_name.inspect}"
+        conds = {:type => 'product', :full_name => @full_name}
+        attrs = {
+          :category_id => @category.id,
+          :name => @model_name,
+          :state => 0
+        }
+        if rev = Reviewable.first(conds)
+          if rev.complete?
+            # reset
+            rev.set(attrs)
+            return rev
+          else
+            return nil
+          end
+        else
+          return Reviewable.new conds.merge(attrs)
+        end
       end
 
       def _find_or_create_manufacturer(name)
-        Manufacturer.with_or_create(:name, name)
+        Manufacturer.first_or_create_by(:name => name)
       end
 
       def _scrape_chipset_manufacturer_name
@@ -131,14 +130,14 @@ module Hardwarepedia
       def _find_or_create_chipset_product
         chipset_full_name = "#{@chipset_manufacturer_name} #{@chipset_model_name}"
         logger.debug "Finding or creating chipset #{chipset_full_name.inspect}"
-        # do not reset :state here as we may process two products in a row that
-        # point to the same chipset - we will set the :state of the chipset when
-        # we actually process it
-        Reviewable.first_or_create(
+        # do not reset the state of the chipset object here as we may process
+        # two products in a row that point to the same chipset - we will set the
+        # state of the chipset if/when we actually come to it in processing
+        Reviewable.first_or_create_by(
           {:type => 'chipset',
            :full_name => chipset_full_name},
-          {:manufacturer => @chipset_manufacturer,
-           :category => @category,
+          {:manufacturer_id => @chipset_manufacturer.id,
+           :category_id => @category.id,
            :name => @chipset_model_name}
            # Eventually we will want to copy some of the attributes from this
            # implementation product...
@@ -168,12 +167,15 @@ module Hardwarepedia
             caption.strip!
             # We have the url of the thumbnail but we need a url of the entire image
             url = thumb_url.sub(/\?.+$/, "") + "?scl=2.4"
-            image = Image.with_or_create(:url, url,
-              :reviewable => @product,
-              :reviewable_url => @product_url,
-              :caption => caption
+            image = Image.first_or_create_by(
+              {:url => url},
+              {:reviewable_id => @product.id,
+               :reviewable_url => @product_url,
+               :caption => caption}
             )
-            @product.images.add(image)
+            # remember in Sequel this does not actually do any saving, it just
+            # adds it to an internal array
+            @product.images << image
           end
         end
       end
@@ -184,13 +186,16 @@ module Hardwarepedia
           text.sub(/^Item[ ]*#:[ ]*/, "").to_ascii.strip
         javascript = @scraper.fetch("http://content.newegg.com/LandingPage/ItemInfo4ProductDetail.aspx?Item=#{sku}")
         json = javascript.sub(/^\s*var Product={};\s*var rawItemInfo=/m, "").sub(/;\s*Product=rawItemInfo;\s*$/m, "")
-        hash = JSON.parse(json)
+        hash = MultiJson.load(json)
         amount = (hash['finalPrice'].to_f * 100).to_i
-        price = Price.with_or_create(:reviewable_url, @product_url,
-          :reviewable => @product,
-          :amount => amount
+        price = Price.first_or_create_by(
+          {:reviewable_url => @product_url},
+          {:reviewable_id => @product.id,
+           :amount => amount}
         )
-        @product.prices.add(price)
+        # remember in Sequel this does not actually do any saving, it just
+        # adds it to an internal array
+        @product.prices << price
       end
 
       def _scrape_ratings
@@ -200,12 +205,15 @@ module Hardwarepedia
         # Some products will naturally not have any reviews yet, so there is no rating.
         if rating_node && rating_raw_value = rating_node.text.strip.presence
           num_reviews = rating_node.next.text.scan(/\d+/).first.to_i
-          rating = Rating.with_or_create(:reviewable_url, product_url,
-            :reviewable => @product,
-            :raw_value => rating_raw_value,
-            :num_reviews => num_reviews
+          rating = Rating.first_or_create_by(
+            {:reviewable_url => product_url},
+            {:reviewable_id => @product.id,
+             :raw_value => rating_raw_value,
+             :num_reviews => num_reviews}
           )
-          @product.ratings.add(rating)
+          # remember in Sequel this does not actually do any saving, it just
+          # adds it to an internal array
+          @product.ratings << rating
         end
       end
     end

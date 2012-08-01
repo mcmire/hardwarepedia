@@ -1,23 +1,16 @@
 
-class Category < Base
+class Category < Sequel::Model
   def self.with_chipsets
     ["Graphics Cards"]
   end
 
-  attribute :name
-  attribute :webkey
-  attribute :state, Type::Integer
+  include Base
 
-  index :state
-  index :name
-  unique :webkey
+  one_to_many :reviewables
 
-  requires_fields :name, :webkey, :state
-
-  def initialize(attrs={})
-    super(attrs)
+  def before_create
+    super
     self.webkey ||= name.try(:parameterize)
-    self.state ||= 0
   end
 end
 

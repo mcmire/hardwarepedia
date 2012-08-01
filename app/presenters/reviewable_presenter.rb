@@ -4,9 +4,21 @@ class ReviewablePresenter < Presenter
     view.link_to(full_name, view.product_path(self))
   end
 
+  def linked_chipset
+    if type == 'product'
+      if chipset
+        view.link_to(chipset.try(:full_name), view.product_path(chipset))
+      else
+        "N/A"
+      end
+    else
+      "Yes"
+    end
+  end
+
   def formatted_price
     if current_price
-      view.number_to_currency(current_price.amount, :precision => 2)
+      view.number_to_currency(current_price.amount.to_f / 100, :precision => 2)
     else
       "Not known (yet)"
     end

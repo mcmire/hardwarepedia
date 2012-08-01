@@ -6,6 +6,8 @@ Logging::Rails.configure do |config|
 
   # The default pattern used by the appenders.
   pattern = '[%d] %-5l %50c [%3T] :: %m\n'
+  # The default date pattern used by the appenders.
+  date_pattern = '%Y-%m-%d %H:%M:%S.%6N'
 
   Thread.current[:name] = 'T0'
 
@@ -35,6 +37,7 @@ Logging::Rails.configure do |config|
     :auto_flushing => true,
     :layout => Logging.layouts.pattern(
       :pattern => pattern,
+      :date_pattern => date_pattern,
       :color_scheme => 'bright'
     )
   ) if config.log_to.include? 'stdout'
@@ -50,7 +53,10 @@ Logging::Rails.configure do |config|
     :age => 'daily',
     :truncate => false,
     :auto_flushing => true,
-    :layout => Logging.layouts.pattern(:pattern => pattern)
+    :layout => Logging.layouts.pattern(
+      :pattern => pattern,
+      :date_pattern => date_pattern
+    )
   ) if config.log_to.include? 'file'
 
   # Configure an appender that will send an email for "error" and "fatal" log
@@ -94,21 +100,6 @@ Logging::Rails.configure do |config|
   #
   Logging.logger.root.level = config.log_level
   Logging.logger.root.appenders = config.log_to unless config.log_to.empty?
-
-  # Under Phusion Passenger smart spawning, we need to reopen all IO streams
-  # after workers have forked.
-  #
-  # The rolling file appender uses shared file locks to ensure that only one
-  # process will roll the log file. Each process writing to the file must have
-  # its own open file descriptor for `flock` to function properly. Reopening
-  # the file descriptors after forking ensures that each worker has a unique
-  # file descriptor.
-  #
-  if defined?(PhusionPassenger)
-    PhusionPassenger.on_event(:starting_worker_process) do |forked|
-      Logging.reopen if forked
-    end
-  end
 
 end
 

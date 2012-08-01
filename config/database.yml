@@ -1,16 +1,17 @@
 login: &login
+  user: root
   adapter: postgresql
 
 development:
   <<: *login
   database: hardwarepedia_development
-  pool: 20
+  pool: 10
   # timeout: 5000
 
 production:
   <<: *login
   database: hardwarepedia_production
-  pool: 20
+  pool: 10
   # timeout: 5000
 
 test:

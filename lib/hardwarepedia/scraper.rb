@@ -54,7 +54,7 @@ module Hardwarepedia
         :url => url,
         :content_html => content_html
       )
-      if u = Url.with(:url, url)
+      if u = Url.find_fresh(url)
         # logger.debug "Url: #{url}"
         # require 'diffy'
         # diff = Diffy::Diff.new(u.content_html, u2.content_html)
@@ -104,7 +104,7 @@ module Hardwarepedia
     end
 
     def find_or_create_category(category_name)
-      Category.first_or_create(:name => category_name, :state => 1)
+      Category.first_or_create_by(:name => category_name, :state => 1)
     end
 
     def scrape_product(retailer_name, category_name, product_url)

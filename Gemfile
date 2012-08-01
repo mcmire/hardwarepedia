@@ -1,37 +1,46 @@
 
 source :rubygems
 
-# This isn't strictly necessary, but we want to make sure the server has the
-# right version of Bundler
-gem 'bundler', '~> 1.1.0'
-
 # gem 'rails', '3.2.3'
 gem 'tzinfo'  # activesupport should be requiring this but it doesn't :(
 gem 'activesupport', '3.2.3'
 gem 'actionpack', '3.2.3'
 
-gem 'ohm', '1.0.2'
-# gem 'ohm', :path => '~/code/github/forks/ohm'
-# gem 'ohm', :git => 'http://github.com/mcmire/ohm.git', :branch => 'mcmire'
-gem 'ohm-contrib', '1.0.1', :require => 'ohm/contrib'
+gem 'sequel', '3.34.1'
+# gem 'talentbox-sequel-rails', '0.3.4'
+gem 'mcmire-sequel-rails', :path => '~/code/github/forks/sequel-rails', :require => 'sequel/rails'
+
+gem 'pg', '0.14.0'
+
+gem 'redis', '3.0.1'
+gem 'nest', '1.1.1'
 
 #---
 
 gem 'mustache', '0.99.4'
 gem 'stache', '0.9.1'
-gem 'hierarchical_page_titles', '0.2.0'
-gem 'simple-navigation', '3.7.0'
-# Make sure you have libxml-dev and libxslt-dev installed before you install this
-gem 'nokogiri', '1.5.2'
-gem 'yajl-ruby', '1.1.0'
-gem 'active_hash', '0.9.10'
-# For some reason this doesn't work if we require it right away
-gem 'colored', '1.2', :require => false
-# Provides String#to_ascii which is useful when screenscraping
-gem 'stringex', '1.4.0'
-gem 'map', '5.7.0'
+
 gem 'logging', '1.7.2'
 gem 'logging-rails', '0.4.0'
+
+gem 'multi_json', '1.3.5'
+gem 'oj', '1.3.0'
+
+gem 'hierarchical_page_titles', '0.2.0'
+
+gem 'simple-navigation', '3.7.0'
+
+# Make sure you have libxml-dev and libxslt-dev installed before you install this
+gem 'nokogiri', '1.5.2'
+# Provides String#to_ascii which is useful when screenscraping
+gem 'stringex', '1.4.0'
+
+gem 'active_hash', '0.9.10'
+
+# For some reason this doesn't work if we require it right away
+gem 'colored', '1.2', :require => false
+
+gem 'map', '5.7.0'
 
 #---
 

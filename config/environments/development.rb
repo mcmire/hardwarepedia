@@ -42,9 +42,4 @@ Hardwarepedia::Application.configure do
   # else
     config.log_to = %w[stdout file]
   # end
-
-  # Show the logging configuration on STDOUT
-  config.show_log_configuration = true
-
-  # QueryTrace.enable!
 end

@@ -20,15 +20,14 @@ namespace :scrape do
 
   def clear_all_the_things
     puts "Clearing out everything first..."
-    # Ohm.flush
-    Category.delete_all
-    Manufacturer.delete_all
-    Reviewable.delete_all
     Image.delete_all
     Price.delete_all
     Rating.delete_all
-    Url.delete_all(:type => 'product')
-    # Hardwarepedia::Scraper::CategoryPageScraper.clear_cache
+    Reviewable.delete_all
+    Category.delete_all
+    Manufacturer.delete_all
+    Url.delete_all#(:type => 'product')
+    Hardwarepedia::Scraper::CategoryPageScraper.clear_cache
   end
 
   task :products => :init do

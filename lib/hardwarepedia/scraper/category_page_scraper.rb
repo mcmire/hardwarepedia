@@ -16,7 +16,7 @@ module Hardwarepedia
       end
 
       def self.db
-        Ohm.redis
+        Hardwarepedia.redis
       end
 
       def self.key
@@ -152,11 +152,11 @@ module Hardwarepedia
         rname = @retailer.name
         cname = @category.name
         if all_product_urls = db.hget(key[:retailers][rname], cname)
-          JSON.parse(all_product_urls)
+          MultiJson.load(all_product_urls)
         else
           all_product_urls = block.call
           db.sadd(key[:retailers], rname)
-          db.hset(key[:retailers][rname], cname, JSON.generate(all_product_urls))
+          db.hset(key[:retailers][rname], cname, MultiJson.dump(all_product_urls))
           db.expire(key[:retailer][rname], EXPIRES_IN)
           all_product_urls
         end

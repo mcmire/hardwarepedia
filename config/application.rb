@@ -1,15 +1,14 @@
+
 require File.expand_path('../boot', __FILE__)
 
 require 'pp'
+require 'rails'
 
-require 'rails/all'
-
-if defined?(Bundler)
-  # If you precompile assets before deploying to production, use this line
-  Bundler.require(*Rails.groups(:assets => %w(development test)))
-  # If you want your assets lazily compiled in production, use this line
-  # Bundler.require(:default, :assets, Rails.env)
-end
+groups = Rails.groups(:assets => %w(development test))
+Bundler.setup(*groups)
+require 'action_controller/railtie'
+require 'action_view/railtie'
+Bundler.require(*groups)
 
 Logging.logger['Base'].level = :debug
 
@@ -50,5 +49,13 @@ module Hardwarepedia
     config.assets.version = '1.0'
 
     # config.cache_store = [:file_store, Rails.root.join('tmp/cache'), :expires_in => 1.day]
+
+    config.show_log_configuration = false
+    config.sequel.truncate_sql_to = 500
+
+    config.after_initialize do
+      Logging.logger['Sequel'].additive = false
+      Logging.logger['Sequel'].add_appenders('file')
+    end
   end
 end

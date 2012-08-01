@@ -1,58 +1,56 @@
 
-class Reviewable < Base
+class Reviewable < Sequel::Model
+  include Base
+
   # For right now we are just assuming that we are hitting one URL...
   # in the future if multiple URLs are involved maybe we could have a 'data'
   # field that holds info scraped from a URL
 
-  include Ohm::Timestamps
+  many_to_one :manufacturer
+  many_to_one :category
+  many_to_one :chipset, :class => self,
+    :conditions => {:type => 'chipset'}
+  one_to_many :implementations, :class => self, :key => :chipset_id,
+    :conditions => {:type => 'product'}
 
-  reference :manufacturer, :Manufacturer
-  reference :category, :Category
-  reference :chipset, :Chipset  # for products
+  one_to_many :images
+  one_to_many :prices
+  one_to_many :ratings
+  one_to_many :reviews
 
-  collection :implementations, :Product  # for chipsets
-
-  attribute :type # one of chipset or product
-  attribute :name
-  attribute :full_name
-  attribute :webkey
-  attribute :summary
-  attribute :num_reviews, Type::Integer
-  attribute :specs, Type::Hash
-  attribute :content_urls, Type::Set
-  attribute :official_urls, Type::Set
-  attribute :mention_urls, Type::Set
-  attribute :released_to_market_on, Type::Date
-  attribute :state, Type::Integer
-
-  set :images, :Image
-  set :prices, :Price
-  set :ratings, :Rating
-  set :reviews, :Review
-
-  requires_fields \
-    :manufacturer_id, :category_id, :name, :specs, :content_urls,
-    :if => :complete?
-  requires_fields :chipset_id,
-    :if => [:complete?, :product?, :_chipset_needed?]
-  fails_save_with("Must have one price") {|r| r.complete? && r.prices.empty? }
-
-  index :type
-  index :full_name
-  index :state
-  unique :webkey
+  serialize_attributes :set, \
+    :content_urls, :official_urls, :mention_urls
 
   attr_accessor :is_chipset
 
   def initialize(attrs={})
     super(attrs)
-    self.full_name ||= (manufacturer && [manufacturer.name, name].join(" "))
-    self.webkey ||= full_name.try(:parameterize)
     self.content_urls ||= Set.new
     self.official_urls ||= Set.new
     self.mention_urls ||= Set.new
     self.state ||= 0
-    self.is_chipset ||= false
+  end
+
+  def before_create
+    super
+    self.webkey ||= full_name.try(:parameterize)
+  end
+
+  def before_save
+    super
+    self.full_name ||= (manufacturer && [manufacturer.name, name].join(" "))
+    self.num_prices = prices.size
+  end
+
+  def validate
+    super
+    if complete?
+      validates_presence [:manufacturer_id, :category_id, :name, :specs, :content_urls]
+      errors.add(:prices, 'is empty') if prices_dataset.empty?
+    end
+    if complete? && product? && Category.with_chipsets.include?(category.name)
+      validates_presence :chipset_id
+    end
   end
 
   def incomplete?
@@ -88,17 +86,12 @@ class Reviewable < Base
     end
     grouped_ratings
   end
+=end
 
   def current_rating
     self.ratings.sort {|a,b| b.created_at <=> a.created_at }.first
   end
   def current_price
     self.prices.sort {|a,b| b.created_at <=> a.created_at }.first
-  end
-=end
-
-  # Only applicable for products
-  def _chipset_needed?
-    Category.with_chipsets.include?(category.name)
   end
 end

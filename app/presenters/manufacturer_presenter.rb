@@ -21,9 +21,7 @@ class ManufacturerPresenter < Presenter
   end
 
   def reviewables
-    manufacturer.reviewables.map { |r|
-      Product === r ? ProductPresenter.new(self, r) : ChipsetPresenter.new(self, r)
-    }
+    ReviewablePresenter.wrap(view, manufacturer.reviewables)
   end
 
   def _sorted_link_to(link_text, sort_key, params={})

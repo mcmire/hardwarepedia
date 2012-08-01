@@ -1,90 +1,119 @@
-# encoding: UTF-8
-# This file is auto-generated from the current state of the database. Instead
-# of editing this file, please use the migrations feature of Active Record to
-# incrementally modify your database, and then regenerate this schema definition.
-#
-# Note that this schema.rb definition is the authoritative source for your
-# database schema. If you need to create the application database on another
-# system, you should be using db:schema:load, not running all the migrations
-# from scratch. The latter is a flawed and unsustainable approach (the more migrations
-# you'll amass, the slower it'll run and the greater likelihood for issues).
-#
-# It's strongly recommended to check this file into your version control system.
-
-ActiveRecord::Schema.define(:version => 20120612040426) do
-
-  create_table "categories", :force => true do |t|
-    t.string   "name",       :null => false
-    t.string   "webkey",     :null => false
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+Sequel.migration do
+  up do
+    create_table(:categories) do
+      primary_key :id
+      column :name, "text", :null=>false
+      column :webkey, "text", :null=>false
+      column :state, "integer", :null=>false
+      column :created_at, "timestamp without time zone", :null=>false
+      column :updated_at, "timestamp without time zone", :null=>false
+      
+      index [:name], :name=>:categories_name_key, :unique=>true
+      index [:state]
+      index [:webkey]
+      index [:webkey], :name=>:categories_webkey_key, :unique=>true
+    end
+    
+    create_table(:manufacturers) do
+      primary_key :id
+      column :name, "text", :null=>false
+      column :webkey, "text", :null=>false
+      column :created_at, "timestamp without time zone", :null=>false
+      column :updated_at, "timestamp without time zone", :null=>false
+      
+      index [:name], :name=>:manufacturers_name_key, :unique=>true
+      index [:webkey]
+      index [:webkey], :name=>:manufacturers_webkey_key, :unique=>true
+    end
+    
+    create_table(:schema_migrations) do
+      column :filename, "text", :null=>false
+      
+      primary_key [:filename]
+    end
+    
+    create_table(:urls) do
+      primary_key :id
+      column :type, "text", :null=>false
+      column :url, "text", :null=>false
+      column :content_html, "text", :null=>false
+      column :content_digest, "text", :null=>false
+      column :state, "integer", :null=>false
+      column :created_at, "timestamp without time zone", :null=>false
+      column :updated_at, "timestamp without time zone", :null=>false
+      column :expires_at, "timestamp without time zone", :null=>false
+      
+      index [:state]
+      index [:type]
+      index [:url], :name=>:urls_url_key, :unique=>true
+    end
+    
+    create_table(:reviewables) do
+      primary_key :id
+      column :type, "text", :null=>false
+      column :full_name, "text"
+      column :webkey, "text", :null=>false
+      column :state, "integer", :null=>false
+      column :num_prices, "integer", :null=>false
+      column :created_at, "timestamp without time zone", :null=>false
+      column :updated_at, "timestamp without time zone", :null=>false
+      foreign_key :manufacturer_id, :manufacturers, :key=>[:id]
+      foreign_key :category_id, :categories, :key=>[:id]
+      column :name, "text"
+      column :specs, "text"
+      column :content_urls, "text"
+      foreign_key :chipset_id, :reviewables, :key=>[:id]
+      column :summary, "text"
+      column :num_reviews, "integer"
+      column :released_to_market_on, "date"
+      column :official_urls, "text"
+      column :mention_urls, "text"
+      
+      index [:full_name]
+      index [:full_name], :name=>:reviewables_full_name_key, :unique=>true
+      index [:state]
+      index [:type]
+      index [:webkey], :name=>:reviewables_webkey_key, :unique=>true
+    end
+    
+    create_table(:images) do
+      primary_key :id
+      foreign_key :reviewable_id, :reviewables, :null=>false, :key=>[:id]
+      column :reviewable_url, "text", :null=>false
+      column :url, "text", :null=>false
+      column :caption, "text"
+      column :created_at, "timestamp without time zone", :null=>false
+      column :updated_at, "timestamp without time zone", :null=>false
+      
+      index [:url], :name=>:images_url_key, :unique=>true
+    end
+    
+    create_table(:prices) do
+      primary_key :id
+      foreign_key :reviewable_id, :reviewables, :null=>false, :key=>[:id]
+      column :reviewable_url, "text", :null=>false
+      column :amount, "integer", :null=>false
+      column :created_at, "timestamp without time zone", :null=>false
+      column :updated_at, "timestamp without time zone", :null=>false
+      
+      index [:reviewable_url], :name=>:prices_reviewable_url_key, :unique=>true
+    end
+    
+    create_table(:ratings) do
+      primary_key :id
+      foreign_key :reviewable_id, :reviewables, :null=>false, :key=>[:id]
+      column :reviewable_url, "text", :null=>false
+      column :raw_value, "text", :null=>false
+      column :value, "double precision", :null=>false
+      column :num_reviews, "integer", :null=>false
+      column :created_at, "timestamp without time zone", :null=>false
+      column :updated_at, "timestamp without time zone", :null=>false
+      
+      index [:reviewable_url], :name=>:ratings_reviewable_url_key, :unique=>true
+    end
   end
-
-  create_table "images", :force => true do |t|
-    t.integer  "reviewable_id"
-    t.text     "url",           :null => false
-    t.datetime "created_at",    :null => false
-    t.datetime "updated_at",    :null => false
-    t.text     "caption"
+  
+  down do
+    drop_table(:ratings, :prices, :images, :reviewables, :urls, :schema_migrations, :manufacturers, :categories)
   end
-
-  create_table "manufacturers", :force => true do |t|
-    t.string   "name",         :null => false
-    t.string   "webkey",       :null => false
-    t.datetime "created_at",   :null => false
-    t.datetime "updated_at",   :null => false
-    t.string   "official_url"
-  end
-
-  create_table "prices", :force => true do |t|
-    t.integer  "reviewable_id", :null => false
-    t.string   "url",           :null => false
-    t.float    "amount",        :null => false
-    t.datetime "created_at",    :null => false
-    t.datetime "updated_at",    :null => false
-  end
-
-  create_table "ratings", :force => true do |t|
-    t.integer  "reviewable_id", :null => false
-    t.string   "url",           :null => false
-    t.string   "raw_value",     :null => false
-    t.float    "value",         :null => false
-    t.integer  "num_reviews",   :null => false
-    t.datetime "created_at",    :null => false
-    t.datetime "updated_at",    :null => false
-  end
-
-  create_table "reviewables", :force => true do |t|
-    t.string   "type",                                                               :null => false
-    t.integer  "category_id",                                                        :null => false
-    t.integer  "manufacturer_id"
-    t.string   "name",                                                               :null => false
-    t.string   "full_name",                                                          :null => false
-    t.string   "webkey",                                                             :null => false
-    t.datetime "created_at",                                                         :null => false
-    t.datetime "updated_at",                                                         :null => false
-    t.text     "summary"
-    t.text     "specs",              :default => "--- {}\n"
-    t.integer  "num_reviews"
-    t.text     "content_urls",       :default => "--- !ruby/object:Set\nhash: {}\n"
-    t.text     "official_urls",      :default => "--- !ruby/object:Set\nhash: {}\n"
-    t.text     "mention_urls",       :default => "--- !ruby/object:Set\nhash: {}\n"
-    t.date     "market_released_on"
-    t.float    "aggregated_score"
-    t.boolean  "is_chipset",         :default => false,                              :null => false
-    t.integer  "state",              :default => 0
-    t.integer  "chipset_id"
-  end
-
-  add_index "reviewables", ["full_name"], :name => "index_reviewables_on_full_name", :unique => true
-
-  create_table "urls", :force => true do |t|
-    t.string   "url",                         :null => false
-    t.text     "content_html",                :null => false
-    t.string   "content_md5",                 :null => false
-    t.datetime "created_at",                  :null => false
-    t.datetime "updated_at",                  :null => false
-    t.integer  "state",        :default => 0
-  end
-
 end
