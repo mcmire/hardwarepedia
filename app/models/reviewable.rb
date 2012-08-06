@@ -46,6 +46,7 @@ class Reviewable < Sequel::Model
 
   def initialize(attrs={})
     super(attrs)
+    self.specs ||= {}
     self.content_urls ||= Set.new
     self.official_urls ||= Set.new
     self.mention_urls ||= Set.new
