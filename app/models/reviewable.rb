@@ -18,6 +18,7 @@ class Reviewable < Sequel::Model
   one_to_many :ratings
   one_to_many :reviews
 
+  serialize_attributes :json, :specs
   serialize_attributes :set, \
     :content_urls, :official_urls, :mention_urls
 
@@ -91,25 +92,27 @@ class Reviewable < Sequel::Model
     type == 'chipset'
   end
 
-=begin
   def prices_grouped_by_retailer
+    # TODO: sqlize
     grouped_prices = self.prices.to_a.group_by(&:retailer_name)
-    grouped_prices.each do |retailer_name, prices|
+    grouped_prices.map { |retailer_name, prices|
       prices.sort! {|a,b| b.created_at <=> a.created_at }
-    end
-    grouped_prices
+      {:retailer_name => retailer_name, :prices => prices}
+    }
   end
+
   def ratings_grouped_by_retailer
+    # TODO: sqlize
     grouped_ratings = self.ratings.to_a.group_by(&:retailer_name)
-    grouped_ratings.each do |retailer_name, ratings|
+    grouped_ratings.map { |retailer_name, ratings|
       ratings.sort! {|a,b| b.created_at <=> a.created_at }
-    end
-    grouped_ratings
+      {:retailer_name => retailer_name, :ratings => ratings}
+    }
   end
-=end
 
   def current_rating
-    @current_rating ||= self.ratings.sort {|a,b| b.created_at <=> a.created_at }.first
+    @current_rating ||=
+      self.ratings.sort {|a,b| b.created_at <=> a.created_at }.first
   end
 
   def current_num_reviews
@@ -117,6 +120,23 @@ class Reviewable < Sequel::Model
   end
 
   def current_price
-    @current_price ||= self.prices.sort {|a,b| b.created_at <=> a.created_at }.first
+    @current_price ||=
+      self.prices.sort {|a,b| b.created_at <=> a.created_at }.first
+  end
+
+  def has_specs?
+    !specs.empty?
+  end
+
+  def has_images?
+    !images.empty?
+  end
+
+  def has_prices?
+    !prices.empty?
+  end
+
+  def has_ratings?
+    !ratings.empty?
   end
 end

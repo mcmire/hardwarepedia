@@ -1,13 +1,51 @@
 
 class ReviewablePresenter < Presenter
+  def chipset
+    return @chipset if defined?(@chipset)
+    chipset = reviewable.chipset
+    @chipset = chipset ? ReviewablePresenter.new(self, chipset) : nil
+  end
+
+  def implementations
+    @implementations ||= ReviewablePresenter.wrap(self, reviewable.implementations)
+  end
+
+  def images
+    @images ||= ImagePresenter.wrap(self, reviewable.images)
+  end
+
+  def specs
+    @specs ||= reviewable.specs.map { |name, value|
+      {:name => name, :value => value}
+    }
+  end
+
+  def prices_grouped_by_retailer
+    @prices_grouped_by_retailer ||=
+      reviewable.prices_grouped_by_retailer.map { |group|
+        {:retailer_name => group[:retailer_name],
+         :prices => PricePresenter.wrap(self, group[:prices])}
+      }
+  end
+
+  def ratings_grouped_by_retailer
+    @ratings_grouped_by_retailer ||=
+      reviewable.ratings_grouped_by_retailer.map { |group|
+        {:retailer_name => group[:retailer_name],
+         :ratings => RatingPresenter.wrap(self, group[:ratings])}
+      }
+  end
+
+  #---
+
   def linked_full_name
-    view.link_to(full_name, view.product_path(self))
+    view.link_to(reviewable.full_name, view.reviewable_path(:webkey => webkey))
   end
 
   def linked_chipset
     if type == 'product'
       if chipset
-        view.link_to(chipset.try(:full_name), view.product_path(chipset))
+        chipset.linked_full_name
       else
         "N/A"
       end

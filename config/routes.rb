@@ -4,5 +4,6 @@ Hardwarepedia::Application.routes.draw do
 
   root :to => 'main#index'
 
-  resources :products
+  resources :reviewables, :except => :show
+  get '/reviewables/:webkey', :to => 'reviewables#show', :as => :reviewable
 end

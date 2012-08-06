@@ -45,7 +45,7 @@ module Hardwarepedia
 
     extend Forwardable
     def_delegators :controller,
-      :params, :session, :flash, :respond_to
+      :params, :session, :flash, :render, :respond_to, :not_found!
 
     def initialize(controller, name)
       @controller = controller

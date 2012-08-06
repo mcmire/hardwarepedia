@@ -65,6 +65,8 @@ module Hardwarepedia
           @product.state = 1
           @product.save
         end
+      rescue => e
+        logger.warn "Trouble saving a product! => #{e.class}: #{e.message}"
       end
 
       def _scrape_model_name

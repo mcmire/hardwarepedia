@@ -45,6 +45,14 @@ class ApplicationController < ActionController::Base
   # FocusedController gem.
   include Hardwarepedia::ControllerMixins::FocusedController
 
+  # Add some simple methods to format dates and times
+  helper TimeFormattingHelpers
+
   # Add a default window title
   window_title "Hardwarepedia"
+
+  def not_found!(msg="Not Found")
+    raise ActionController::RoutingError.new(msg)
+  end
+  hide_action :not_found
 end

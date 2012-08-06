@@ -1,6 +1,6 @@
 
 namespace :scrape do
-  task :init => :environment do
+  task :init => [:environment, 'redis:start'] do
     $stdout.sync = true   # disable buffering
 
 =begin
@@ -19,7 +19,7 @@ namespace :scrape do
   end
 
   def clear_all_the_things
-    start_over = true
+    start_over = false
     puts "Clearing out everything first..."
     Image.delete_all
     Price.delete_all
