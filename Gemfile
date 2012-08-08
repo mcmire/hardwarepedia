@@ -6,11 +6,13 @@ gem 'tzinfo'  # activesupport should be requiring this but it doesn't :(
 gem 'activesupport', '3.2.3'
 gem 'actionpack', '3.2.3'
 
+gem 'pg', '0.14.0'
+
 gem 'sequel', '3.34.1'
+gem 'sequel_pg', :require => 'sequel'
+gem 'sequel_polymorphic', :git => 'https://github.com/saimonmoore/sequel_polymorphic'
 # gem 'talentbox-sequel-rails', '0.3.4'
 gem 'mcmire-sequel-rails', :path => '~/code/github/forks/sequel-rails', :require => 'sequel/rails'
-
-gem 'pg', '0.14.0'
 
 gem 'redis', '3.0.1'
 gem 'nest', '1.1.1'

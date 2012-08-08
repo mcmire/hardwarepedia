@@ -31,7 +31,13 @@ namespace :scrape do
       Url.delete_all
       Hardwarepedia::Scraper::CategoryPageScraper.clear_cache
     else
-      Url.delete_all(:type => 'product')
+      Url.delete_all(:type => 'Product')
+    end
+  end
+
+  def clear_product(product_url)
+    if url = Url.first(:url => product_url) and url.resource
+      url.resource.destroy
     end
   end
 
@@ -45,9 +51,16 @@ namespace :scrape do
     category_name = "Graphics Cards"
     product_url = ENV["URL"] or raise "Must pass URL=..."
 
-    # clear_all_the_things
+    clear_product(product_url)
 
     scraper = Hardwarepedia::Scraper.new
     scraper.scrape_product(retailer_name, category_name, product_url)
+  end
+
+  task :failed => :init do
+    scraper = Hardwarepedia::Scraper.new
+    Reviewable.where(:state => 1).each do |rev|
+      scraper.scrape_product('Newegg', 'Graphics Cards', rev.official_urls[0])
+    end
   end
 end

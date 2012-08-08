@@ -6,7 +6,10 @@ class Category < Sequel::Model
 
   include Base
 
+  plugin :polymorphic
+
   one_to_many :reviewables
+  one_to_many :urls, :as => :resource
 
   def before_create
     super

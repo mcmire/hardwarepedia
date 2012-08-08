@@ -6,17 +6,20 @@ class Reviewable < Sequel::Model
   # in the future if multiple URLs are involved maybe we could have a 'data'
   # field that holds info scraped from a URL
 
+  plugin :polymorphic
+
   many_to_one :manufacturer
   many_to_one :category
   many_to_one :chipset, :class => self,
     :conditions => {:type => 'chipset'}
+
   one_to_many :implementations, :class => self, :key => :chipset_id,
     :conditions => {:type => 'product'}
-
-  one_to_many :images
-  one_to_many :prices
-  one_to_many :ratings
-  one_to_many :reviews
+  one_to_many :images, :dependent => :destroy
+  one_to_many :prices, :dependent => :destroy
+  one_to_many :ratings, :dependent => :destroy
+  one_to_many :reviews, :dependent => :destroy
+  one_to_many :urls, :as => :resource
 
   serialize_attributes :json, :specs
   serialize_attributes :set, \

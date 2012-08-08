@@ -7,7 +7,7 @@ class Url < Sequel::Model
   # Delete all urls, or urls of a certain type
   def self.delete_all(opts={})
     if opts[:type]
-      filter(:type => opts[:type]).to_a.each {|url| url.delete }
+      filter(:resource_type => opts[:type]).to_a.each {|url| url.delete }
     else
       all.to_a.each {|url| url.delete }
     end
@@ -15,8 +15,18 @@ class Url < Sequel::Model
   end
 
   def self.find_fresh(url)
-    first {|o| o.url == url && o.expires_at > Time.now }
+    url = first(:url => url)
+    if url and (url.incomplete? or url.expired?)
+      url.destroy
+      return nil
+    else
+      return url
+    end
   end
+
+  plugin :polymorphic
+
+  many_to_one :resource, :polymorphic => true
 
   def initialize(attrs={})
     super(attrs)
@@ -37,5 +47,9 @@ class Url < Sequel::Model
   end
   def complete?
     state == 1
+  end
+
+  def expired?
+    expires_at > Time.now
   end
 end

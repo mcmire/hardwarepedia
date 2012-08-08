@@ -9,6 +9,10 @@ module Hardwarepedia
   class Scraper
 
     class ProductPageScraper
+      def self.call(*args)
+        new(*args).call
+      end
+
       attr_reader :scraper, :category, :product_page, :product_url
 
       def initialize(scraper, category, product_page, product_url)
@@ -21,7 +25,7 @@ module Hardwarepedia
       end
 
       def call
-        @scraper.visiting(@product_page, @product_url, 'product') do |doc|
+        @scraper.visiting(@product_page, @product_url) do |url, doc|
           @doc = doc
 
           pairs = doc.xpath('.//div[@id="Specs"]//dl/*').map {|node| node.text.sub(/:$/, "").strip }
@@ -64,9 +68,12 @@ module Hardwarepedia
 
           @product.state = 1
           @product.save
+
+          url.resource = @product
         end
       rescue => e
         logger.warn "Trouble saving a product! => #{e.class}: #{e.message}"
+        logger.warn e.backtrace.join("\n")
       end
 
       def _scrape_model_name

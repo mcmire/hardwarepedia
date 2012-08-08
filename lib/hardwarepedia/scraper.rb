@@ -36,7 +36,7 @@ module Hardwarepedia
       end
     end
 
-    def visiting(page, url, type, &block)
+    def visiting(page, url)
       body = fetch(url)
       @doc = doc = Nokogiri.parse(body)
       node_set = doc.xpath(page.content_xpath)
@@ -49,53 +49,25 @@ module Hardwarepedia
 
       page.preprocess!(node_set) if page.respond_to?(:preprocess!)
       content_html = node_set.to_html
-      u2 = Url.new(
-        :type => type,
-        :url => url,
-        :content_html => content_html
-      )
+      u2 = Url.new(:url => url, :content_html => content_html)
       if u = Url.find_fresh(url)
-        # logger.debug "Url: #{url}"
-        # require 'diffy'
-        # diff = Diffy::Diff.new(u.content_html, u2.content_html)
-        # puts diff.to_s(:color)
-        # exit
-
-        # We've scraped this URL before.
-        if true #type == 'product' && u.content_digest == u2.content_digest
-          # The content of this page hasn't changed since we last scraped it,
-          # so no need to scrape it again
-          if type == 'category'
-            logger.debug "Already scraped <#{url}>, but going to process anyway since it's a category page"
-            u.state = 0
-            u.save
-            yield doc
-            u.state = 1
-            u.save
-          else
-            logger.debug "Already scraped <#{url}>, and it hasn't changed since last scrape, proceeding"
-          end
-        else
-          # The content of the page *has* changed since we last scraped it,
-          # so just update the signature of the content
-          if type == 'product'
-            logger.debug "Already scraped <#{url}>, but it's changed since last scrape, so updating md5"
-          else
-            logger.debug "Scraping <#{url}> regardless of content since it's a collection page"
-          end
+        # we've scraped this url before
+        if Category === resource
+          logger.debug "Already scraped <#{url}>, but going to process anyway since it's a category page"
           u.state = 0
-          u.content_digest = u2.content_digest
           u.save
-          yield doc
+          yield u, doc
           u.state = 1
           u.save
+        else
+          logger.debug "Already scraped <#{url}>, and it hasn't changed since last scrape, proceeding"
         end
       else
+        # we haven't scraped this url yet
         u = u2
-        # We haven't scraped this URL yet, so add it to the database.
         logger.debug "Haven't scraped <#{url}> yet, content md5 is #{u.content_digest}"
         u.save
-        yield doc
+        yield u, doc
         u.state = 1
         u.save
       end

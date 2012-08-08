@@ -34,7 +34,6 @@ Sequel.migration do
     
     create_table(:urls) do
       primary_key :id
-      column :type, "text", :null=>false
       column :url, "text", :null=>false
       column :content_html, "text", :null=>false
       column :content_digest, "text", :null=>false
@@ -42,9 +41,10 @@ Sequel.migration do
       column :created_at, "timestamp without time zone", :null=>false
       column :updated_at, "timestamp without time zone", :null=>false
       column :expires_at, "timestamp without time zone", :null=>false
+      column :resource_id, "integer"
+      column :resource_type, "text"
       
       index [:state]
-      index [:type]
       index [:url], :name=>:urls_url_key, :unique=>true
     end
     

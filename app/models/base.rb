@@ -6,6 +6,7 @@ module Base
     plugin :serialization
     plugin :validation_helpers
     plugin :timestamps, :update_on_create => true
+    plugin :association_dependencies
   end
 
   module ClassMethods
