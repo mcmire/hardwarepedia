@@ -10,6 +10,10 @@ class ReviewablePresenter < Presenter
     @implementations ||= ReviewablePresenter.wrap(self, reviewable.implementations)
   end
 
+  def content_urls
+    @content_urls ||= UrlPresenter.wrap(self, reviewable.content_urls)
+  end
+
   def images
     @images ||= ImagePresenter.wrap(self, reviewable.images)
   end

@@ -15,10 +15,10 @@ class Reviewable < Sequel::Model
 
   one_to_many :implementations, :class => self, :key => :chipset_id,
     :conditions => {:type => 'product'}
-  one_to_many :images, :dependent => :destroy
-  one_to_many :prices, :dependent => :destroy
-  one_to_many :ratings, :dependent => :destroy
-  one_to_many :reviews, :dependent => :destroy
+  one_to_many :images
+  one_to_many :prices
+  one_to_many :ratings
+  one_to_many :reviews
   one_to_many :urls, :as => :resource
 
   serialize_attributes :json, :specs
@@ -65,6 +65,14 @@ class Reviewable < Sequel::Model
     super
     self.full_name ||= (manufacturer && [manufacturer.name, name].join(" "))
     self.num_prices = prices.size
+  end
+
+  def before_destroy
+    super
+    images.each(&:destroy) rescue nil
+    prices.each(&:destroy) rescue nil
+    ratings.each(&:destroy) rescue nil
+    reviews.each(&:destroy) rescue nil
   end
 
   def validate

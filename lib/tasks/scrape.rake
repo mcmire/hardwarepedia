@@ -35,10 +35,9 @@ namespace :scrape do
     end
   end
 
-  def clear_product(product_url)
-    if url = Url.first(:url => product_url) and url.resource
-      url.resource.destroy
-    end
+  def clear_product(product, url)
+    # product.destroy if product
+    url.destroy if url
   end
 
   task :products => :init do
@@ -47,14 +46,32 @@ namespace :scrape do
   end
 
   task :product => :init do
+    args = {}
+    args[:url] = ENV['URL']
+    args[:webkey] = ENV['WEBKEY']
+
+    unless args[:url] or args[:webkey]
+      raise ArgumentError, "Must pass URL=... or WEBKEY=..."
+    end
+
+    if url = args[:url]
+      u = Url.first(:url => url)
+      p = u.resource if u
+    elsif args[:webkey]
+      if p = Reviewable.first(:type => 'product', :webkey => args[:webkey])
+        url = p.content_urls.first
+        u = Url.first(:url => url)
+      else
+        raise "Can't find a product by #{args[:webkey]}"
+      end
+    end
+
+    clear_product(p, u)
+
     retailer_name = "Newegg"
     category_name = "Graphics Cards"
-    product_url = ENV["URL"] or raise "Must pass URL=..."
-
-    clear_product(product_url)
-
     scraper = Hardwarepedia::Scraper.new
-    scraper.scrape_product(retailer_name, category_name, product_url)
+    scraper.scrape_product(retailer_name, category_name, url)
   end
 
   task :failed => :init do

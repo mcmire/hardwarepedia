@@ -7,6 +7,14 @@
 
   <h1>{{full_name}}</h1>
 
+  <h2>Content URLs:</h2>
+
+  <ul>
+    {{#content_urls}}
+      <li>{{{linked_url}}}</li>
+    {{/content_urls}}
+  </ul>
+
   {{#chipset?}}
     <p><i>(This is a chipset)</i></p>
     <p>Implementations:</p>
