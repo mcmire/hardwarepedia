@@ -2,12 +2,6 @@
 require 'net/http'
 require 'enumerator'
 
-require_dependency 'hardwarepedia/scraper/configuration'
-require_dependency 'hardwarepedia/scraper/category_page_scraper'
-
-require_dependency 'url'
-require_dependency 'category'
-
 module Hardwarepedia
 
   class Scraper
@@ -126,6 +120,12 @@ module Hardwarepedia
       content
     end
   end
+
+  class << self
+    attr_accessor :scraper
+  end
+
+  self.scraper = Scraper.new
 
 end
 

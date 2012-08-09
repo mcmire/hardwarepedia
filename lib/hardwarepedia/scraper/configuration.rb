@@ -13,111 +13,86 @@ module Hardwarepedia
           instance_eval(File.read(config_filename), config_filename, 1)
         end
 
-        #---
-
-        def retailer(retailer_name, &block)
-          retailer = Retailer.new(@config, retailer_name)
-          retailer.configure(&block)
-          @config.add_retailer(retailer)
+        def site(name, &block)
+          site = Node.new(@config, name, &block)
+          @config.add_site(site)
         end
       end
 
-      class Retailer
-        attr_reader \
-          :config,
-          :name,
-          :base_category_module,
-          :category_pages,
-          :product_page
+      #---
 
-        def initialize(config, name)
-          @config = config
+      class Node
+        attr_reader :parent, :name, :nodes
+
+        def initialize(parent, name, &block)
+          @parent = parent
           @name = name
-          @category_pages = []
+          @vars = {}
+          @nodes = []
+          configure(&block) if block
         end
 
         def configure(&block)
           instance_eval(&block)
         end
 
-        def base_category(&block)
-          @base_category_module = Module.new(&block)
+        def get(name)
+          @vars[name.to_sym]
         end
 
-        def category(category_name, &block)
-          @category_pages << CategoryPage.new(self, category_name).configure(&block)
-        end
-
-        def product(&block)
-          @product_page = ProductPage.new(self).configure(&block)
-        end
-      end
-
-      class CategoryPage
-        attr_reader :retailer, :category_name
-
-        def initialize(retailer, category_name)
-          @retailer = retailer
-          @category_name = category_name
-        end
-
-        def doc
-          @retailer.config.scraper.doc
-        end
-
-        def configure(&block)
-          mod = @retailer.base_category_module
-          mods = []
-          mods << mod if mod
-          mods << Module.new(&block)
-          extend(*mods)
-        end
-      end
-
-      class ProductPage
-        attr_reader :retailer
-
-        def initialize(retailer)
-          @retailer = retailer
-        end
-
-        def doc
-          @retailer.config.scraper.doc
-        end
-
-        def configure(&block)
-          extend Module.new(&block)
-        end
-      end
-
-      class << self
-        def build(scraper)
-          Configuration.new(scraper).tap do |config|
-            dsl = DSL.new(config)
-            config_file = Rails.root.join('config/scraper.rb')
-            dsl.evaluate_config_file(config_file)
+        def set(name, val)
+          if Hash === val
+            val.each {|k,v| set(k, v) }
+          else
+            @vars[name.to_sym] = val
           end
         end
+
+        def node_type(name, &type_block)
+          @node_types[name] = type_block
+          singleton_class.send(:define_method, name) do |&block|
+            node(name).tap do |n|
+              n.configure(&type_block)
+              n.configure(&block)
+            end
+          end
+        end
+
+        def node(name, &block)
+          @nodes << Node.new(self, name, &block)
+        end
+
+        def content_xpath
+          raise NotImplementedError, "#content_xpath must be defined in your node block"
+        end
       end
 
-      attr_reader :scraper, :retailers
+      #---
+
+      def self.build(scraper)
+        Configuration.new(scraper).tap do |config|
+          dsl = DSL.new(config)
+          config_file = Rails.root.join('config/scraper.rb')
+          dsl.evaluate_config_file(config_file)
+        end
+      end
+
+      #---
+
+      attr_reader :scraper, :sites
 
       def initialize(scraper)
         @scraper = scraper
-        @retailers = {}
+        @sites = {}
       end
 
-      def add_retailer(retailer)
-        @retailers[retailer.name] = retailer
-      end
-
-      def find_retailer(retailer_name)
-        @retailers[retailer_name]
+      def add_site(site)
+        @sites[site.name] = site
       end
 
       def each_category_page(&block)
-        # TODO: Support multiple retailers
-        @retailers[@retailers.keys.first].category_pages.each(&block)
+        # TODO: Support multiple sites
+        @sites[@sites.keys.first].category_pages.each(&block)
       end
     end
   end

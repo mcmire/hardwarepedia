@@ -1,6 +1,6 @@
 
-retailer "Newegg" do
-  base_category do
+site 'Newegg' do
+  node_type :category do
     def total_num_pages
       @total_num_pages ||= begin
         text = doc.at_xpath(".//div[contains(@class, 'recordCount')]").text
@@ -15,7 +15,7 @@ retailer "Newegg" do
     end
 
     def page_url(page_number=1)
-      "http://www.newegg.com/Store/SubCategory.aspx?SubCategory=#{id}&Page=#{page_number}"
+      "http://www.newegg.com/Store/SubCategory.aspx?SubCategory=#{get(:id)}&Page=#{page_number}"
     end
 
     def product_urls
@@ -39,13 +39,13 @@ retailer "Newegg" do
     end
   end
 
-  category "Graphics Cards" do
-    def id; 48; end
-  end
+  category 'Graphics Cards' do
+    set :id => 48
 
-  product do
-    def content_xpath
-      %{//div[@id="bodyCenterArea"]}
+    node :product do
+      def content_xpath
+        %{//div[@id="bodyCenterArea"]}
+      end
     end
   end
 end

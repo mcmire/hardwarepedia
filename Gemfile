@@ -17,6 +17,8 @@ gem 'mcmire-sequel-rails', :path => '~/code/github/forks/sequel-rails', :require
 gem 'redis', '3.0.1'
 gem 'nest', '1.1.1'
 
+gem 'sidekiq'
+
 #---
 
 gem 'mustache', '0.99.4'

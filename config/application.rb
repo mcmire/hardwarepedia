@@ -24,6 +24,9 @@ module Hardwarepedia
     # Rails 3 no longer autoloads lib/.
     # See: <https://rails.lighthouseapp.com/projects/8994/tickets/5218-rails-3-rc-does-not-autoload-from-lib#ticket-5218-8>
     config.autoload_paths << Rails.root.join('lib')
+    # Cause everything in lib/ to be required when Rails.application.eager_load!
+    # is called. Sidekiq will call this when launching itself.
+    config.eager_load_paths << Rails.root.join('lib')
 
     # Set Time.zone default to the specified zone and make Active Record
     # auto-convert to this zone. Run "rake -D time" for a list of tasks for
