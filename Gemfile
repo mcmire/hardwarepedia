@@ -2,22 +2,23 @@
 source :rubygems
 
 # gem 'rails', '3.2.3'
-gem 'tzinfo'  # activesupport should be requiring this but it doesn't :(
+gem 'tzinfo', '~> 0.3.29'  # activesupport should be requiring this but it doesn't :(
 gem 'activesupport', '3.2.3'
 gem 'actionpack', '3.2.3'
 
 gem 'pg', '0.14.0'
 
 gem 'sequel', '3.34.1'
-gem 'sequel_pg', :require => 'sequel'
+gem 'sequel_pg', '1.3.0', :require => 'sequel'
 gem 'sequel_polymorphic', :git => 'https://github.com/saimonmoore/sequel_polymorphic'
 # gem 'talentbox-sequel-rails', '0.3.4'
-gem 'mcmire-sequel-rails', :path => '~/code/github/forks/sequel-rails', :require => 'sequel/rails'
+# gem 'mcmire-sequel-rails', :require => 'sequel/rails', :path => '~/code/github/forks/sequel-rails'
+gem 'mcmire-sequel-rails', :require => 'sequel/rails', :git => 'http://github.com/mcmire/sequel-rails', :branch => 'mcmire'
 
 gem 'redis', '3.0.1'
 gem 'nest', '1.1.1'
 
-gem 'sidekiq'
+gem 'sidekiq', '2.1.1'
 
 #---
 
@@ -32,7 +33,7 @@ gem 'oj', '1.3.0'
 
 gem 'hierarchical_page_titles', '0.2.0'
 
-gem 'simple-navigation', '3.7.0'
+# gem 'simple-navigation', '3.7.0'
 
 # Make sure you have libxml-dev and libxslt-dev installed before you install this
 gem 'nokogiri', '1.5.2'
@@ -42,19 +43,19 @@ gem 'stringex', '1.4.0'
 gem 'active_hash', '0.9.10'
 
 # For some reason this doesn't work if we require it right away
-gem 'colored', '1.2', :require => false
+# gem 'colored', '1.2', :require => false
 
-gem 'map', '5.7.0'
+# gem 'map', '5.7.0'
 
 #---
 
 group :development do
   gem 'heroku', '~> 2.25.0'
   gem 'thin', '~> 1.3.1'
-  gem 'pry'
-  gem 'debugger'
-  gem 'awesome_print'
-  gem 'diffy'
+  # gem 'pry'
+  # gem 'debugger'
+  # gem 'awesome_print'
+  # gem 'diffy'
 end
 
 #---
