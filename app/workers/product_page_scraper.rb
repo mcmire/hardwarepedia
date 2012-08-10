@@ -1,64 +1,65 @@
 
 class ProductPageScraper
-  include Sidekiq::Worker
+  include Hardwarepedia::Sidekiq::Worker
 
-  def perform(retailer_id, category_id, product_url)
-    retailer = Retailer[retailer_id]
+  def perform(site_id, category_id, product_url)
+    site = Site[site_id]
     @category = Category[category_id]
 
-    site_config = @scraper.config.sites[retailer.name]
+    site_config = @scraper.config.sites[site.name]
     product_page = site_config.nodes[@category.name].nodes[:product]
 
-    Hardwarepedia.scraper.visiting(product_page, product_url) do |url, doc|
-      @url = url
-      @doc = doc
-      _scrape_page
-    end
+    _scrape_page
   end
 
   def _scrape_page
-    pairs = @doc.xpath('.//div[@id="Specs"]//dl/*').map {|node| node.text.sub(/:$/, "").strip }
-    @specs = Hash[*pairs]
-    @orig_specs = @specs.dup
+    scraper.visiting(product_page, product_url) do |url, doc|
+      @url = url
+      @doc = doc
 
-    @manufacturer_name = _scrape_manufacturer_name
-    @model_name = _scrape_model_name
-    @full_name = [@manufacturer_name, @model_name].join(" ")
-    @product = _find_or_build_product
-    if @product.nil?
-      # nil means the product is currently being processed by another
-      # thread. let's let it do its thing.
-      return
+      pairs = @doc.xpath('.//div[@id="Specs"]//dl/*').map {|node| node.text.sub(/:$/, "").strip }
+      @specs = Hash[*pairs]
+      @orig_specs = @specs.dup
+
+      @manufacturer_name = _scrape_manufacturer_name
+      @model_name = _scrape_model_name
+      @full_name = [@manufacturer_name, @model_name].join(" ")
+      @product = _find_or_build_product
+      if @product.nil?
+        # nil means the product is currently being processed by another
+        # thread. let's let it do its thing.
+        return
+      end
+      # otherwise, go ahead and save it so if another thread comes along and
+      # looks for this product it will find it
+      @product.save
+
+      @product.content_urls << @url.url
+      @product.specs = @specs
+
+      @manufacturer = _find_or_create_manufacturer(@manufacturer_name)
+      @product.manufacturer_id = @manufacturer.id
+
+      @chipset_manufacturer_name = _scrape_chipset_manufacturer_name
+      @chipset_model_name = _scrape_chipset_model_name
+      @chipset_manufacturer =
+        _find_or_create_manufacturer(@chipset_manufacturer_name)
+      @chipset = _find_or_create_chipset_product
+      @product.chipset_id = @chipset.id
+
+      # product has to be saved before we can add associations
+      @product.state = 0
+      @product.save
+
+      _scrape_images
+      _scrape_prices
+      _scrape_ratings
+
+      @product.state = 1
+      @product.save
+
+      @url.resource = @product
     end
-    # otherwise, go ahead and save it so if another thread comes along and
-    # looks for this product it will find it
-    @product.save
-
-    @product.content_urls << @url.url
-    @product.specs = @specs
-
-    @manufacturer = _find_or_create_manufacturer(@manufacturer_name)
-    @product.manufacturer_id = @manufacturer.id
-
-    @chipset_manufacturer_name = _scrape_chipset_manufacturer_name
-    @chipset_model_name = _scrape_chipset_model_name
-    @chipset_manufacturer =
-      _find_or_create_manufacturer(@chipset_manufacturer_name)
-    @chipset = _find_or_create_chipset_product
-    @product.chipset_id = @chipset.id
-
-    # product has to be saved before we can add associations
-    @product.state = 0
-    @product.save
-
-    _scrape_images
-    _scrape_prices
-    _scrape_ratings
-
-    @product.state = 1
-    @product.save
-
-    @url.resource = @product
   end
 
   def _scrape_model_name

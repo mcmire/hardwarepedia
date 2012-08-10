@@ -29,7 +29,7 @@ namespace :scrape do
     Manufacturer.delete_all
     if start_over
       Url.delete_all
-      Hardwarepedia::Scraper::CategoryPageScraper.clear_cache
+      # Hardwarepedia::Scraper::CategoryPageScraper.clear_cache
     else
       Url.delete_all(:type => 'Product')
     end
@@ -42,7 +42,7 @@ namespace :scrape do
 
   task :products => :init do
     clear_all_the_things
-    Hardwarepedia::Scraper.new.scrape_products
+    Hardwarepedia.scraper.scrape_category('Newegg', 'Graphics Cards')
   end
 
   task :product => :init do
@@ -55,26 +55,24 @@ namespace :scrape do
     end
 
     if url = args[:url]
-      u = Url.first(:url => url)
-      p = u.resource if u
+      ourl = Url.first(:url => url)
+      rev = ourl.resource if ourl
     elsif args[:webkey]
-      if p = Reviewable.first(:type => 'product', :webkey => args[:webkey])
-        url = p.content_urls.first
-        u = Url.first(:url => url)
+      if rev = Reviewable.first(:type => 'product', :webkey => args[:webkey])
+        url = rev.content_urls.first
+        ourl = Url.first(:url => url)
       else
         raise "Can't find a product by #{args[:webkey]}"
       end
     end
 
-    clear_product(p, u)
+    clear_product(rev, ourl)
 
-    retailer_name = "Newegg"
-    category_name = "Graphics Cards"
-    scraper = Hardwarepedia::Scraper.new
-    scraper.scrape_product(retailer_name, category_name, url)
+    Hardwarepedia.scraper.scrape_product('Newegg', 'Graphics Cards', url)
   end
 
   task :failed => :init do
+    # TODO
     scraper = Hardwarepedia::Scraper.new
     Reviewable.where(:state => 1).each do |rev|
       scraper.scrape_product('Newegg', 'Graphics Cards', rev.official_urls[0])

@@ -10,7 +10,7 @@ module Hardwarepedia
         def evaluate_config_file(config_filename)
           # borrowed from Bundler::Dsl
           config_filename = config_filename.to_s
-          instance_eval(File.read(config_filename), config_filename, 1)
+          instance_eval File.read(config_filename), config_filename, 1
         end
 
         def site(name, &block)
@@ -88,11 +88,6 @@ module Hardwarepedia
 
       def add_site(site)
         @sites[site.name] = site
-      end
-
-      def each_category_page(&block)
-        # TODO: Support multiple sites
-        @sites[@sites.keys.first].category_pages.each(&block)
       end
     end
   end
