@@ -1,4 +1,3 @@
-
 site 'Newegg' do
   node_type :category do
     def total_num_pages

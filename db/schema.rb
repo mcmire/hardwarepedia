@@ -4,7 +4,7 @@ Sequel.migration do
       primary_key :id
       column :name, "text", :null=>false
       column :webkey, "text", :null=>false
-      column :state, "integer", :null=>false
+      column :state, "integer", :default=>0, :null=>false
       column :created_at, "timestamp without time zone", :null=>false
       column :updated_at, "timestamp without time zone", :null=>false
       
@@ -32,12 +32,22 @@ Sequel.migration do
       primary_key [:filename]
     end
     
+    create_table(:sites) do
+      primary_key :id
+      column :name, "text", :null=>false
+      column :webkey, "text", :null=>false
+      column :root_url, "text", :null=>false
+      
+      index [:name], :name=>:sites_name_key, :unique=>true
+      index [:webkey], :name=>:sites_webkey_key, :unique=>true
+    end
+    
     create_table(:urls) do
       primary_key :id
       column :url, "text", :null=>false
       column :content_html, "text", :null=>false
       column :content_digest, "text", :null=>false
-      column :state, "integer", :null=>false
+      column :state, "integer", :default=>0, :null=>false
       column :created_at, "timestamp without time zone", :null=>false
       column :updated_at, "timestamp without time zone", :null=>false
       column :expires_at, "timestamp without time zone", :null=>false
@@ -53,7 +63,7 @@ Sequel.migration do
       column :type, "text", :null=>false
       column :full_name, "text"
       column :webkey, "text", :null=>false
-      column :state, "integer", :null=>false
+      column :state, "integer", :default=>0, :null=>false
       column :num_prices, "integer", :null=>false
       column :created_at, "timestamp without time zone", :null=>false
       column :updated_at, "timestamp without time zone", :null=>false
@@ -114,6 +124,6 @@ Sequel.migration do
   end
   
   down do
-    drop_table(:ratings, :prices, :images, :reviewables, :urls, :schema_migrations, :manufacturers, :categories)
+    drop_table(:ratings, :prices, :images, :reviewables, :urls, :sites, :schema_migrations, :manufacturers, :categories)
   end
 end

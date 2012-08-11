@@ -1,4 +1,6 @@
 
+config = Hardwarepedia::Application.config
+
 config.sequel.truncate_sql_to = 500
 
 config.after_initialize do

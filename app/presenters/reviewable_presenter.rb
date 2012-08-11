@@ -24,18 +24,18 @@ class ReviewablePresenter < Presenter
     }
   end
 
-  def prices_grouped_by_retailer
-    @prices_grouped_by_retailer ||=
-      reviewable.prices_grouped_by_retailer.map { |group|
-        {:retailer_name => group[:retailer_name],
+  def prices_grouped_by_site
+    @prices_grouped_by_site ||=
+      reviewable.prices_grouped_by_site.map { |group|
+        {:site_name => group[:site_name],
          :prices => PricePresenter.wrap(self, group[:prices])}
       }
   end
 
-  def ratings_grouped_by_retailer
-    @ratings_grouped_by_retailer ||=
-      reviewable.ratings_grouped_by_retailer.map { |group|
-        {:retailer_name => group[:retailer_name],
+  def ratings_grouped_by_site
+    @ratings_grouped_by_site ||=
+      reviewable.ratings_grouped_by_site.map { |group|
+        {:site_name => group[:site_name],
          :ratings => RatingPresenter.wrap(self, group[:ratings])}
       }
   end

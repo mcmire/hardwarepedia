@@ -1,19 +1,19 @@
 
 module Hardwarepedia
   class << self
-    attr_accessor :redis
-    attr_accessor :redis_pool
     attr_writer :use_threads
     def use_threads?; @use_threads; end
   end
 
+  # TODO : Move these to Loquacious-land
   NUM_CONCURRENT_WORKERS = 10
-  self.use_threads = true
+  self.use_threads = false
 
   def self.init
-    redis = Redis.new
-    self.redis = redis
-    self.redis_pool = ConnectionPool.new(:size => 10, :timeout => 3) { Redis.new }
+  end
+
+  def self.redis(&block)
+    Sidekiq.redis(&block)
   end
 
   def self.queue(klass, *args)

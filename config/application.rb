@@ -54,7 +54,8 @@ module Hardwarepedia
     config.show_log_configuration = false
 
     config.after_initialize do
-      Hardwarepedia.init
+      require_dependency 'hardwarepedia'
+      require_dependency 'hardwarepedia/scraper'
     end
   end
 end

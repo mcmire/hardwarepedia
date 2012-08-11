@@ -3,17 +3,18 @@ class ProductPageScraper
   include Hardwarepedia::Sidekiq::Worker
 
   def perform(site_id, category_id, product_url)
-    site = Site[site_id]
+    @site = Site[site_id]
     @category = Category[category_id]
+    @product_url = product_url
 
-    site_config = @scraper.config.sites[site.name]
-    product_page = site_config.nodes[@category.name].nodes[:product]
+    site_config = scraper.config.sites[@site.name]
+    @product_page = site_config.nodes[@category.name].nodes[:product]
 
     _scrape_page
   end
 
   def _scrape_page
-    scraper.visiting(product_page, product_url) do |url, doc|
+    scraper.visiting(@product_page, @product_url) do |url, doc|
       @url = url
       @doc = doc
 
@@ -183,7 +184,7 @@ class ProductPageScraper
     # Are you serious...
     sku = @doc.at_xpath('.//div[@id="bcaBreadcrumbTop"]//dd[last()]').
       text.sub(/^Item[ ]*#:[ ]*/, "").to_ascii.strip
-    javascript = @scraper.fetch("http://content.newegg.com/LandingPage/ItemInfo4ProductDetail.aspx?Item=#{sku}")
+    javascript = scraper.fetch("http://content.newegg.com/LandingPage/ItemInfo4ProductDetail.aspx?Item=#{sku}")
     json = javascript.sub(/^\s*var Product={};\s*var rawItemInfo=/m, "").sub(/;\s*Product=rawItemInfo;\s*$/m, "")
     hash = MultiJson.load(json)
     amount = (hash['finalPrice'].to_f * 100).to_i
@@ -217,3 +218,4 @@ class ProductPageScraper
     end
   end
 end
+

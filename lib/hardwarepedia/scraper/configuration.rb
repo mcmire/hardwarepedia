@@ -28,7 +28,8 @@ module Hardwarepedia
           @parent = parent
           @name = name
           @vars = {}
-          @nodes = []
+          @node_types = {}
+          @nodes = {}
           configure(&block) if block
         end
 
@@ -40,17 +41,18 @@ module Hardwarepedia
           @vars[name.to_sym]
         end
 
-        def set(name, val)
-          if Hash === val
-            val.each {|k,v| set(k, v) }
+        def set(name, val=nil)
+          if Hash === name
+            name.each {|k,v| set(k, v) }
           else
             @vars[name.to_sym] = val
           end
         end
 
-        def node_type(name, &type_block)
-          @node_types[name] = type_block
-          singleton_class.send(:define_method, name) do |&block|
+        def node_type(type_name, &type_block)
+          type_name = type_name.to_sym
+          @node_types[type_name] = type_block
+          singleton_class.__send__(:define_method, type_name) do |name, &block|
             node(name).tap do |n|
               n.configure(&type_block)
               n.configure(&block)
@@ -59,7 +61,11 @@ module Hardwarepedia
         end
 
         def node(name, &block)
-          @nodes << Node.new(self, name, &block)
+          @nodes[name] = Node.new(self, name, &block)
+        end
+
+        def doc
+          Hardwarepedia.scraper.current_doc
         end
 
         def content_xpath
@@ -76,8 +82,6 @@ module Hardwarepedia
           dsl.evaluate_config_file(config_file)
         end
       end
-
-      #---
 
       attr_reader :scraper, :sites
 

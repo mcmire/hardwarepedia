@@ -1,26 +1,38 @@
 
 module Hardwarepedia
-  module Worker
-    def self.redis_key
-      @redis_key ||= Nest.new(self, redis)
-    end
+  module Sidekiq
+    module Worker
+      # Provide the following methods as both instance AND class methods.
+      # The instance variables will remain local to their context -- that is, the
+      # connection to redis does not propagate from class to instance, there are
+      # two separate connections created.
+      extend self
 
-    def self.redis
-      Hardwarepedia.redis
-    end
+      # def redis_key
+      #   @redis_key ||= Nest.new(self, redis)
+      # end
 
-    def self.scraper
-      Hardwarepedia.scraper
-    end
+      # def redis(&block)
+      #   if block
+      #     Hardwarepedia.redis do |conn|
+      #       @redis = conn
+      #       block.call(conn)
+      #     end
+      #   else
+      #     @redis
+      #   end
+      # end
 
-    attr_accessor :redis
+      def scraper
+        Hardwarepedia.scraper
+      end
 
-    def redis_key
-      @redis_key ||= Nest.new(self, redis)
-    end
-
-    def scraper
-      Hardwarepedia.scraper
+      def self.included(base)
+        base.class_eval do
+          include ::Sidekiq::Worker
+          sidekiq_options :retry => false
+        end
+      end
     end
   end
 end

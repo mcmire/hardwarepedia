@@ -31,8 +31,8 @@
 
   {{#has_prices?}}
     <h2>Prices</h2>
-    {{#prices_grouped_by_retailer}}
-      <h3>{{retailer_name}}</h3>
+    {{#prices_grouped_by_site}}
+      <h3>{{site_name}}</h3>
       <ul>
         {{#prices}}
           <li>
@@ -40,13 +40,13 @@
           </li>
         {{/prices}}
       </ul>
-    {{/prices_grouped_by_retailer}}
+    {{/prices_grouped_by_site}}
   {{/has_prices?}}
 
   {{#has_ratings?}}
     <h2>Ratings</h2>
-    {{#ratings_grouped_by_retailer}}
-      <h3>{{retailer_name}}</h3>
+    {{#ratings_grouped_by_site}}
+      <h3>{{site_name}}</h3>
       <ul>
         {{#ratings}}
           <li>
@@ -54,7 +54,7 @@
           </li>
         {{/ratings}}
       </ul>
-    {{/ratings_grouped_by_retailer}}
+    {{/ratings_grouped_by_site}}
   {{/has_ratings?}}
 
   {{#has_images?}}

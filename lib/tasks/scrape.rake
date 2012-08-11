@@ -3,6 +3,8 @@ namespace :scrape do
   task :init => [:environment, 'redis:start'] do
     $stdout.sync = true   # disable buffering
 
+    require_dependency 'hardwarepedia/scraper'
+
 =begin
     if Rails.env.production?
       # Load all the eager load paths since Rails does not do this when running
@@ -21,6 +23,7 @@ namespace :scrape do
   def clear_all_the_things
     start_over = false
     puts "Clearing out everything first..."
+    Site.delete_all
     Image.delete_all
     Price.delete_all
     Rating.delete_all
@@ -33,6 +36,11 @@ namespace :scrape do
     else
       Url.delete_all(:type => 'Product')
     end
+
+    Site.create(
+      :name => 'Newegg',
+      :root_url => 'http://newegg.com'
+    )
   end
 
   def clear_product(product, url)

@@ -1,5 +1,5 @@
 
-require_dependency 'retailer'
+require_dependency 'site'
 require_dependency 'reviewable'
 
 class Rating < Sequel::Model
@@ -21,10 +21,10 @@ class Rating < Sequel::Model
     end
   end
 
-  def retailer_name
-    @retailer_name ||= begin
+  def site_name
+    @site_name ||= begin
       host = URI.parse(reviewable_url).host.sub(%r{^www\.}, "")
-      Retailer.find_by_host(host).name
+      Site.find_by_host(host).name
     end
   end
 end

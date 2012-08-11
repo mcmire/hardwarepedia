@@ -104,21 +104,21 @@ class Reviewable < Sequel::Model
     type == 'chipset'
   end
 
-  def prices_grouped_by_retailer
+  def prices_grouped_by_site
     # TODO: sqlize
-    grouped_prices = self.prices.to_a.group_by(&:retailer_name)
-    grouped_prices.map { |retailer_name, prices|
+    grouped_prices = self.prices.to_a.group_by(&:site_name)
+    grouped_prices.map { |site_name, prices|
       prices.sort! {|a,b| b.created_at <=> a.created_at }
-      {:retailer_name => retailer_name, :prices => prices}
+      {:site_name => site_name, :prices => prices}
     }
   end
 
-  def ratings_grouped_by_retailer
+  def ratings_grouped_by_site
     # TODO: sqlize
-    grouped_ratings = self.ratings.to_a.group_by(&:retailer_name)
-    grouped_ratings.map { |retailer_name, ratings|
+    grouped_ratings = self.ratings.to_a.group_by(&:site_name)
+    grouped_ratings.map { |site_name, ratings|
       ratings.sort! {|a,b| b.created_at <=> a.created_at }
-      {:retailer_name => retailer_name, :ratings => ratings}
+      {:site_name => site_name, :ratings => ratings}
     }
   end
 

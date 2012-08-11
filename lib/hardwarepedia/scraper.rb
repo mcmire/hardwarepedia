@@ -46,9 +46,13 @@ module Hardwarepedia
       end
     end
 
-    attr_reader :doc
+    attr_reader :config, :current_doc
 
     # XXX: Not sure how useful these are anymore since they just queue stuff...
+
+    def initialize
+      @config = Configuration.build(self)
+    end
 
     def scrape_products(site_name)
       site = _find_or_create_site(site_name)
@@ -71,8 +75,8 @@ module Hardwarepedia
     end
 
     def visiting(page, url)
-      body = _fetch(url)
-      @doc = doc = Nokogiri.parse(body)
+      body = fetch(url)
+      @current_doc = doc = Nokogiri.parse(body)
       node_set = doc.xpath(page.content_xpath)
       unless node_set
         raise Error, "Couldn't find content at <#{page.content_xpath}>!"
@@ -105,23 +109,16 @@ module Hardwarepedia
         # u.state = 1
         # u.save
       end
+
+      @current_doc = nil
     rescue Error => e
       logger.error e
     end
 
-    def config
-      @config ||= Configuration.build(self)
-    end
-
-    def logger
-      # Q: Will this also write to the root logger file?
-      @logger ||= Logging.logger[self].tap do |logger|
-        file_appender = Logging.appenders.file(LOG_FILENAME)
-        logger.add_appenders(file_appender)
-      end
-    end
-
-    def _fetch(url)
+    # You can use this method instead of #visiting if you just want to fetch a
+    # URL (for instance we use this in ProductPageScraper)
+    #
+    def fetch(url)
       uri = URI.parse(url)
       i = 1
       num_seconds = 1
@@ -153,8 +150,16 @@ module Hardwarepedia
       content
     end
 
+    def logger
+      # Q: Will this also write to the root logger file?
+      @logger ||= Logging.logger[self].tap do |logger|
+        file_appender = Logging.appenders.file(LOG_FILENAME)
+        logger.add_appenders(file_appender)
+      end
+    end
+
     def _find_or_create_site(site_name)
-      Site.find_or_create(:name => site_name)
+      Site.first(:name => site_name)
     end
 
     def _find_or_create_category(category_name)
