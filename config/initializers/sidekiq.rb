@@ -1,4 +1,6 @@
 
+require_dependency 'hardwarepedia'
+
 config = Hardwarepedia::Application.config
 
 # Cause everything in lib/ to be required when Rails.application.eager_load!
@@ -6,5 +8,6 @@ config = Hardwarepedia::Application.config
 config.eager_load_paths += [ Rails.root.join('lib').to_s ]
 
 Sidekiq.configure_server do |config|
-  #config.redis = Hwp.config.redis
+  config.options[:concurrency] = Hardwarepedia.num_concurrent_workers
+  # config.redis = Hwp.config.redis
 end

@@ -1,13 +1,14 @@
 
 module Hardwarepedia
   class << self
+    attr_accessor :num_concurrent_workers
     attr_writer :use_threads
     def use_threads?; @use_threads; end
   end
 
   # TODO : Move these to Loquacious-land
-  NUM_CONCURRENT_WORKERS = 10
-  self.use_threads = false
+  self.num_concurrent_workers = 25  #10
+  self.use_threads = true
 
   def self.init
   end

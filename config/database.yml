@@ -5,13 +5,13 @@ login: &login
 development:
   <<: *login
   database: hardwarepedia_development
-  pool: 10
+  pool: 25
   # timeout: 5000
 
 production:
   <<: *login
   database: hardwarepedia_production
-  pool: 10
+  pool: 25
   # timeout: 5000
 
 test:
