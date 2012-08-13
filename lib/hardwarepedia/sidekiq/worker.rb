@@ -6,7 +6,7 @@ module Hardwarepedia
       # The instance variables will remain local to their context -- that is, the
       # connection to redis does not propagate from class to instance, there are
       # two separate connections created.
-      extend self
+      # extend self
 
       # def redis_key
       #   @redis_key ||= Nest.new(self, redis)
@@ -23,14 +23,25 @@ module Hardwarepedia
       #   end
       # end
 
+      def self.included(base)
+        base.class_eval do
+          attr_accessor :current_ourl, :current_doc
+        end
+      end
+
       def scraper
         Hardwarepedia.scraper
       end
 
-      def self.included(base)
-        base.class_eval do
-          include ::Sidekiq::Worker
-          sidekiq_options :retry => false
+      def slogger
+        scraper.logger
+      end
+
+      def visiting(page_config, url, resource=nil)
+        scraper.visiting(page_config, url, resource) do |ourl, doc|
+          @current_ourl = ourl
+          @current_doc = doc
+          yield
         end
       end
     end

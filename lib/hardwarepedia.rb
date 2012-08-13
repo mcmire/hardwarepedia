@@ -21,7 +21,28 @@ module Hardwarepedia
     if use_threads?
       klass.perform_async(*args)
     else
-      klass.new.perform(*args)
+      enqueue(klass, *args)
     end
   end
+
+  def self.enqueue(klass, *args)
+    @queue ||= []
+    @queue << [klass, args]
+  end
+
+  def self.execute_queue
+    @queue.each do |klass, args|
+      # begin
+        klass.new.perform(*args)
+      # rescue => e
+      #   puts "ERROR running #{klass}:"
+      #   puts "#{e.class}: #{e.message}"
+      #   puts e.backtrace.join("\n")
+      # end
+    end
+  end
+end
+
+if not Hardwarepedia.use_threads?
+  at_exit { Hardwarepedia.execute_queue }
 end

@@ -64,10 +64,6 @@ module Hardwarepedia
           @nodes[name] = Node.new(self, name, &block)
         end
 
-        def doc
-          Hardwarepedia.scraper.current_doc
-        end
-
         def content_xpath
           raise NotImplementedError, "#content_xpath must be defined in your node block"
         end

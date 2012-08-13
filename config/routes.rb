@@ -6,4 +6,7 @@ Hardwarepedia::Application.routes.draw do
 
   resources :reviewables, :except => :show
   get '/reviewables/:webkey', :to => 'reviewables#show', :as => :reviewable
+
+  require 'sidekiq/web'
+  mount Sidekiq::Web => '/sidekiq'
 end

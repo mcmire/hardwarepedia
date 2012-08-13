@@ -18,6 +18,8 @@ gem 'mcmire-sequel-rails', :require => 'sequel/rails', :git => 'http://github.co
 gem 'redis', '3.0.1'
 gem 'nest', '1.1.1'
 
+gem 'slim', '~> 1.2.0'
+gem 'sinatra', '~> 1.3.2', :require => nil
 gem 'sidekiq', '2.1.1'
 
 #---

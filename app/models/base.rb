@@ -19,12 +19,12 @@ module Base
 
     def _first_or_create_by(conds, attrs={})
       if object = first(conds)
-        logger.debug "Found a #{self} (#{conds.inspect}), saving with #{attrs.inspect}"
+        Hardwarepedia.scraper.logger.debug "Found a #{self} (#{conds.inspect}), saving with #{attrs.inspect}"
         object.set(attrs)
         # logger.debug "All attributes: #{object.values.inspect}"
       else
         merged_attrs = conds.merge(attrs)
-        logger.debug "Creating a #{self} (#{merged_attrs.inspect})"
+        Hardwarepedia.scraper.logger.debug "Creating a #{self} (#{merged_attrs.inspect})"
         object = new(merged_attrs)
       end
       object.save

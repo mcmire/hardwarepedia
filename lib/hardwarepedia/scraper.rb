@@ -46,26 +46,59 @@ module Hardwarepedia
       end
     end
 
-    attr_reader :config, :current_doc
-
-    # XXX: Not sure how useful these are anymore since they just queue stuff...
+    attr_reader :config
 
     def initialize
       @config = Configuration.build(self)
+      logger  # initialize
     end
 
-    def scrape_products(site_name)
-      site = _find_or_create_site(site_name)
-      config.sites[site_name].nodes.each_key do |category_name|
-        category = _find_or_create_category(category_name)
-        Hardwarepedia.queue(CategoryPageScraper, site.id, category.id)
+    def logger
+      @logger ||= Logging.logger['Hardwarepedia::Scraper'].tap do |logger|
+        logger.additive = false
+        logger.level = :debug
+        # This is the same as in config/logging.rb
+        pattern = '[%d] %-5l %50c TID-%S%s :: %m\n'
+        date_pattern = '%Y-%m-%d %H:%M:%S.%6N'
+
+        file_appender = Logging::Appenders::File.new('Scraper_file',
+          :auto_flushing => true,
+          :filename => LOG_FILENAME,
+          :layout => Hardwarepedia::Scraper::LogPattern.new(
+            :pattern => pattern,
+            :date_pattern => date_pattern
+          ),
+          :level => :debug
+        )
+        stdout_appender = Logging::Appenders::IO.new('Scraper_stdout', $stdout,
+          :auto_flushing => true,
+          :layout => Hardwarepedia::Scraper::LogPattern.new(
+            :pattern => pattern,
+            :date_pattern => date_pattern,
+            :color_scheme => 'bright'
+          ),
+          :level => :debug
+        )
+
+        logger.appenders = [
+          file_appender,
+          # stdout_appender
+        ]
       end
     end
+
+    # def scrape_products(site_name)
+    #   site = _find_or_create_site(site_name)
+    #   config.sites[site_name].nodes.each_key do |category_name|
+    #     category = _find_or_create_category(category_name)
+    #     Hardwarepedia.queue(CategoryPageScraper, site.id, category.id)
+    #   end
+    # end
 
     def scrape_category(site_name, category_name)
       site = _find_or_create_site(site_name)
       category = _find_or_create_category(category_name)
-      Hardwarepedia.queue(CategoryPageScraper, site.id, category.id)
+      Hardwarepedia.queue(CategoryScraper, site.id, category.id)
     end
 
     def scrape_product(site_name, category_name, product_url)
@@ -74,43 +107,47 @@ module Hardwarepedia
       Hardwarepedia.queue(ProductPageScraper, site.id, category.id, product_url)
     end
 
-    def visiting(page, url)
+    def visiting(page_config, url, resource=nil)
       body = fetch(url)
-      @current_doc = doc = Nokogiri.parse(body)
-      node_set = doc.xpath(page.content_xpath)
+      doc = Nokogiri.parse(body)
+      node_set = doc.xpath(page_config.content_xpath)
       unless node_set
-        raise Error, "Couldn't find content at <#{page.content_xpath}>!"
+        raise Error, "Couldn't find content at <#{page_config.content_xpath}>!"
       end
 
       # Remove script and style tags
       node_set.xpath('.//script | .//style').unlink
 
-      page.preprocess!(node_set) if page.respond_to?(:preprocess!)
+      page_config.preprocess!(node_set) if page_config.respond_to?(:preprocess!)
       content_html = node_set.to_html
-      u2 = Url.new(:url => url, :content_html => content_html)
-      if u = Url.find_fresh(url)
-        # we've scraped this url before
+      ourl2 = Url.new(:url => url, :content_html => content_html)
+      if ourl = Url.find_fresh(url)
+        if resource
+          ourl.resource = resource
+          ourl.save
+        end
         if Category === resource
           logger.debug "Already scraped <#{url}>, but going to process anyway since it's a category page"
-          # u.state = 0
-          # u.save
-          yield u, doc
-          # u.state = 1
-          # u.save
+          # ourl.state = 0
+          # ourl.save
+          yield ourl, doc
+          # ourl.state = 1
+          # ourl.save
         else
           logger.debug "Already scraped <#{url}>, and it hasn't changed since last scrape, proceeding"
         end
       else
-        # we haven't scraped this url yet
-        u = u2
-        logger.debug "Haven't scraped <#{url}> yet, content md5 is #{u.content_digest}"
-        u.save
-        yield u, doc
-        # u.state = 1
-        # u.save
+        ourl = ourl2
+        logger.debug "Haven't scraped <#{url}> yet, content md5 is #{ourl.content_digest}"
+        if resource
+          ourl.resource = resource
+          ourl.save
+        end
+        # ourl.save
+        yield ourl, doc
+        # ourl.state = 1
+        # ourl.save
       end
-
-      @current_doc = nil
     rescue Error => e
       logger.error e
     end
@@ -148,14 +185,6 @@ module Hardwarepedia
         end
       end
       content
-    end
-
-    def logger
-      # Q: Will this also write to the root logger file?
-      @logger ||= Logging.logger[self].tap do |logger|
-        file_appender = Logging.appenders.file(LOG_FILENAME)
-        logger.add_appenders(file_appender)
-      end
     end
 
     def _find_or_create_site(site_name)

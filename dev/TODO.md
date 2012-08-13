@@ -1,5 +1,9 @@
 # TODO
 
+* When Sidekiq is done processing a category there are 7 or so stragglers which
+  take ~70s to complete -- I think they are just getting caught in the back of
+  the queue -- maybe not something to worry about though
+
 * Some prices are ending up as $99,999.00 ... why is that??
 * Add a way to hit an endpoint to kick off a job
   * Need to keep delayed job going in the background

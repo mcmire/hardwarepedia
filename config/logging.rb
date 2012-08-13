@@ -5,11 +5,9 @@ Logging::Rails.configure do |config|
   Logging.format_as :inspect
 
   # The default pattern used by the appenders.
-  pattern = '[%d] %-5l %50c [%3T] :: %m\n'
+  pattern = '[%d] %-5l %50c :: %m\n'
   # The default date pattern used by the appenders.
   date_pattern = '%Y-%m-%d %H:%M:%S.%6N'
-
-  Thread.current[:name] = 'T0'
 
   # Setup a color scheme called 'bright' than can be used to add color codes
   # to the pattern layout. Color schemes should only be used with appenders

@@ -3,39 +3,53 @@
 # doesn't scrape the whole category, in other words).
 #
 class CategoryPageScraper
+  include Sidekiq::Worker
   include Hardwarepedia::Sidekiq::Worker
 
-  def perform(site_id, category_id, page_number=1)
-    pp :site_id => site_id, :category_id => category_id
+  attr_accessor :site, :category, :page_url
+  attr_accessor :site_config, :category_page_config
 
-    @site = Site[site_id]
-    @category = Category[category_id]
-    @page_number = page_number
-
-    site_config = scraper.config.sites[@site.name]
-    @category_page = site_config.nodes[@category.name]
-
-    @category_url = @category_page.page_url(@page_number)
-
-    _scrape_category or return
-
-    Hardwarepedia.queue(CategoryPageScraper, @site.id, @category.id, @page_number + 1)
-  end
-
-  def category_url_hash
-    @category_url_hash ||= Digest::MD5.hexdigest(@category_url)
-  end
-
-  def _scrape_category
-    scraper.visiting(@category_page, @category_url) do |ourl, doc|
-      ourl.resource = @category
-      @category_page.product_urls.each do |url|
-        Hardwarepedia.queue(ProductPageScraper, @site.id, @category.id, url)
-      end
+  def site=(site)
+    if Site === site
+      @site = site
+    else
+      @site = Site[site] \
+        or raise "Site #{site.inspect} not found!"
     end
-  rescue Hardwarepedia::Scraper::Error => err   # not found, or something else
-    logger.error(err)
-    return false
+    @site
+  end
+
+  def category=(category)
+    if Category === category
+      @category = category
+    else
+      @category = Category[category] \
+        or raise "Category #{category} not found!"
+    end
+    @category
+  end
+
+  def perform(site, category, page_url)
+    init_with(site, category, page_url)
+    visiting(category_page_config, self.page_url, self.category) do
+      scrape_page
+    end
+  end
+
+  def init_with(site, category, page_url)
+    self.site = site
+    self.category = category
+    self.page_url = page_url
+
+    self.site_config = scraper.config.sites[self.site.name]
+    # XXX: This fails sporadically?!
+    self.category_page_config = site_config.nodes[self.category.name]
+  end
+
+  def scrape_page
+    category_page_config.product_urls(current_doc).each do |url|
+      Hardwarepedia.queue(ProductPageScraper, site.id, category.id, url)
+    end
   end
 end
 

@@ -37,6 +37,10 @@ class Reviewable < Sequel::Model
     tmp.map {|x| x[0] }
   end
 
+  def self.make_webkey(full_name)
+    full_name.try(:parameterize)
+  end
+
   def self._sort_rules
     return {
       "full_name" => "p.full_name.downcase",
@@ -58,7 +62,7 @@ class Reviewable < Sequel::Model
 
   def before_create
     super
-    self.webkey ||= full_name.try(:parameterize)
+    self.webkey ||= self.class.make_webkey(full_name)
   end
 
   def before_save

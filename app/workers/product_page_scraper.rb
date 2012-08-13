@@ -1,66 +1,93 @@
 
 class ProductPageScraper
+  include Sidekiq::Worker
   include Hardwarepedia::Sidekiq::Worker
 
-  def perform(site_id, category_id, product_url)
-    @site = Site[site_id]
-    @category = Category[category_id]
-    @product_url = product_url
+  attr_accessor :site, :category, :page_url
+  attr_accessor :site_config, :product_page_config
+  attr_accessor :product
 
-    site_config = scraper.config.sites[@site.name]
-    @product_page = site_config.nodes[@category.name].nodes[:product]
+  def site=(site)
+    if Site === site
+      @site = site
+    else
+      @site = Site[site] \
+        or raise "Site #{site.inspect} not found!"
+    end
+    @site
+  end
 
-    _scrape_page
+  def category=(category)
+    if Category === category
+      @category = category
+    else
+      @category = Category[category] \
+        or raise "Category #{category} not found!"
+    end
+    @category
+  end
+
+  def perform(site, category, page_url)
+    init_with(site, category, page_url)
+    visiting(product_page_config, self.page_url) do
+      _scrape_page
+    end
+  end
+
+  def init_with(site, category, page_url)
+    self.site = site
+    self.category = category
+    self.page_url = page_url
+
+    self.site_config = scraper.config.sites[self.site.name]
+    self.product_page_config = site_config.nodes[self.category.name].nodes[:product]
   end
 
   def _scrape_page
-    scraper.visiting(@product_page, @product_url) do |url, doc|
-      @url = url
-      @doc = doc
+    pairs = current_doc.xpath('.//div[@id="Specs"]//dl/*').map {|node| node.text.sub(/:$/, "").strip }
+    @specs = Hash[*pairs]
+    @orig_specs = @specs.dup
 
-      pairs = @doc.xpath('.//div[@id="Specs"]//dl/*').map {|node| node.text.sub(/:$/, "").strip }
-      @specs = Hash[*pairs]
-      @orig_specs = @specs.dup
-
-      @manufacturer_name = _scrape_manufacturer_name
-      @model_name = _scrape_model_name
-      @full_name = [@manufacturer_name, @model_name].join(" ")
-      @product = _find_or_build_product
-      if @product.nil?
-        # nil means the product is currently being processed by another
-        # thread. let's let it do its thing.
-        return
-      end
-      # otherwise, go ahead and save it so if another thread comes along and
-      # looks for this product it will find it
-      @product.save
-
-      @product.content_urls << @url.url
-      @product.specs = @specs
-
-      @manufacturer = _find_or_create_manufacturer(@manufacturer_name)
-      @product.manufacturer_id = @manufacturer.id
-
-      @chipset_manufacturer_name = _scrape_chipset_manufacturer_name
-      @chipset_model_name = _scrape_chipset_model_name
-      @chipset_manufacturer =
-        _find_or_create_manufacturer(@chipset_manufacturer_name)
-      @chipset = _find_or_create_chipset_product
-      @product.chipset_id = @chipset.id
-
-      # product has to be saved before we can add associations
-      @product.state = 0
-      @product.save
-
-      _scrape_images
-      _scrape_prices
-      _scrape_ratings
-
-      @product.state = 1
-      @product.save
-
-      @url.resource = @product
+    @manufacturer_name = _scrape_manufacturer_name
+    @model_name = _scrape_model_name
+    @full_name = [@manufacturer_name, @model_name].join(" ")
+    @webkey = Reviewable.make_webkey(@full_name)
+    self.product = _find_or_build_product
+    if product.nil?
+      # nil means the product is currently being processed by another
+      # thread. let's let it do its thing.
+      return
     end
+    # otherwise, go ahead and save it so if another thread comes along and
+    # looks for this product it will find it
+    product.save
+
+    current_ourl.resource = product
+    current_ourl.save
+
+    product.content_urls << page_url
+    product.specs = @specs
+
+    @manufacturer = _find_or_create_manufacturer(@manufacturer_name)
+    product.manufacturer_id = @manufacturer.id
+
+    @chipset_manufacturer_name = _scrape_chipset_manufacturer_name
+    @chipset_model_name = _scrape_chipset_model_name
+    @chipset_manufacturer =
+      _find_or_create_manufacturer(@chipset_manufacturer_name)
+    @chipset = _find_or_create_chipset_product
+    product.chipset_id = @chipset.id
+
+    # product has to be saved before we can add associations
+    product.state = 0
+    product.save
+
+    _scrape_images
+    _scrape_prices
+    _scrape_ratings
+
+    product.state = 1
+    product.save
   end
 
   def _scrape_model_name
@@ -75,7 +102,7 @@ class ProductPageScraper
     manufacturer_name = @specs.delete("Brand").to_s.strip
     if manufacturer_name.blank?
       # Have to do some more sleuthing...
-      if node = @doc.xpath('.//div[@id="bcaBreadcrumbTop"]//dd[last()-1]/a/text()').first
+      if node = current_doc.xpath('.//div[@id="bcaBreadcrumbTop"]//dd[last()-1]/a/text()').first
         manufacturer_name = node.text.strip
       end
     end
@@ -86,11 +113,12 @@ class ProductPageScraper
   end
 
   def _find_or_build_product
-    logger.debug "Finding or building product #{@full_name.inspect}"
-    conds = {:type => 'product', :full_name => @full_name}
+    slogger.debug "Finding or building product #{@full_name.inspect}"
+    conds = {:type => 'product', :webkey => @webkey}
     attrs = {
-      :category_id => @category.id,
+      :category_id => category.id,
       :name => @model_name,
+      :full_name => @full_name,
       :state => 0
     }
     if rev = Reviewable.first(conds)
@@ -129,7 +157,7 @@ class ProductPageScraper
 
   def _find_or_create_chipset_product
     chipset_full_name = "#{@chipset_manufacturer_name} #{@chipset_model_name}"
-    logger.debug "Finding or creating chipset #{chipset_full_name.inspect}"
+    slogger.debug "Finding or creating chipset #{chipset_full_name.inspect}"
     # do not reset the state of the chipset object here as we may process
     # two products in a row that point to the same chipset - we will set the
     # state of the chipset if/when we actually come to it in processing
@@ -137,7 +165,7 @@ class ProductPageScraper
       {:type => 'chipset',
        :full_name => chipset_full_name},
       {:manufacturer_id => @chipset_manufacturer.id,
-       :category_id => @category.id,
+       :category_id => category.id,
        :name => @chipset_model_name}
        # Eventually we will want to copy some of the attributes from this
        # implementation product...
@@ -145,7 +173,7 @@ class ProductPageScraper
   end
 
   def _scrape_images
-    thumb_links = @doc.xpath('.//ul[contains(@class, "navThumbs")]//a')
+    thumb_links = current_doc.xpath('.//ul[contains(@class, "navThumbs")]//a')
     for thumb_link in thumb_links
       # this will give me back xml - i can read the fset element and get dx and dy to get the image dimensions
       "http://images17.newegg.com/is/image/newegg/14-125-367-Z01?req=fvctx,xml,UTF-8,4&scl=1"
@@ -169,52 +197,52 @@ class ProductPageScraper
         url = thumb_url.sub(/\?.+$/, "") + "?scl=2.4"
         image = Image.first_or_create_by(
           {:url => url},
-          {:reviewable_id => @product.id,
-           :reviewable_url => @url.url,
+          {:reviewable_id => product.id,
+           :reviewable_url => page_url,
            :caption => caption}
         )
         # remember in Sequel this does not actually do any saving, it just
         # adds it to an internal array
-        @product.images << image
+        product.images << image
       end
     end
   end
 
   def _scrape_prices
     # Are you serious...
-    sku = @doc.at_xpath('.//div[@id="bcaBreadcrumbTop"]//dd[last()]').
+    sku = current_doc.at_xpath('.//div[@id="bcaBreadcrumbTop"]//dd[last()]').
       text.sub(/^Item[ ]*#:[ ]*/, "").to_ascii.strip
     javascript = scraper.fetch("http://content.newegg.com/LandingPage/ItemInfo4ProductDetail.aspx?Item=#{sku}")
     json = javascript.sub(/^\s*var Product={};\s*var rawItemInfo=/m, "").sub(/;\s*Product=rawItemInfo;\s*$/m, "")
     hash = MultiJson.load(json)
     amount = (hash['finalPrice'].to_f * 100).to_i
     price = Price.first_or_create_by(
-      {:reviewable_url => @url.url},
-      {:reviewable_id => @product.id,
+      {:reviewable_url => page_url},
+      {:reviewable_id => product.id,
        :amount => amount}
     )
     # remember in Sequel this does not actually do any saving, it just
     # adds it to an internal array
-    @product.prices << price
+    product.prices << price
   end
 
   def _scrape_ratings
     ratings = []
     # If the product has no ratings yet then this node will not be available
-    if rating_box_node = @doc.at_xpath('.//div[contains(@class, "grpRating")]//a[contains(@class, "itmRating")]')
+    if rating_box_node = current_doc.at_xpath('.//div[contains(@class, "grpRating")]//a[contains(@class, "itmRating")]')
       rating_node = rating_box_node.at_xpath('./span[@itemprop="ratingValue"]')
       rating_raw_value = "#{rating_node['content']}/5"
       num_reviews_node = rating_box_node.at_xpath('./span[@itemprop="reviewCount"]')
       num_reviews = num_reviews_node.text.to_i
       rating = Rating.first_or_create_by(
-        {:reviewable_url => @url.url},
-        {:reviewable_id => @product.id,
+        {:reviewable_url => page_url},
+        {:reviewable_id => product.id,
          :raw_value => rating_raw_value,
          :num_reviews => num_reviews}
       )
       # remember in Sequel this does not actually do any saving, it just
       # adds it to an internal array
-      @product.ratings << rating
+      product.ratings << rating
     end
   end
 end
